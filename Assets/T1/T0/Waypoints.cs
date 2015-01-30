@@ -77,6 +77,14 @@ public class Waypoints : MonoBehaviour {
 					transform.position = current;
 				}
 				else {
+					Quaternion theta = Quaternion.LookRotation (current - transform.position);
+					transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, 1000 * Time.deltaTime);
+
+					dir = Vector3.Normalize (current - transform.position);					
+					dir.x = dir.x + Mathf.Cos (theta.y) * vel * Time.deltaTime;
+					dir.z = dir.z + Mathf.Sin (theta.y) * vel * Time.deltaTime;
+					transform.position = (transform.position + dir);
+					/*
 					dir = Vector3.Normalize (current - transform.position);
 					Quaternion theta = Quaternion.LookRotation (current - transform.position);
 
@@ -89,6 +97,7 @@ public class Waypoints : MonoBehaviour {
 					else {
 						transform.position = (transform.position + dir);
 					}
+					*/
 				}
 				yield return null;
 			}
