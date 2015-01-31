@@ -8,11 +8,13 @@ public class Grid : MonoBehaviour {
 	public LayerMask unwalkableMask;
 	public Vector2 gridWorldSize;
 	public float nodeRadius;
-	Node[,] grid;
+	public Node[,] grid;
+	public MapLoader mapLoader=null;
 
-	float nodeDiameter;
-	int gridSizeX;
-	int gridSizeY;
+
+	public float nodeDiameter;
+	public int gridSizeX;
+	public int gridSizeY;
 
 	public MapData mapData;
 	void Start () {
@@ -111,6 +113,26 @@ public class Grid : MonoBehaviour {
 
 	public List<Node> path;
 	void OnDrawGizmos() {
+
+		if (mapLoader == null) {
+
+			mapLoader = new MapLoader (new Vector2(20, 20), 0.5f);
+			mapData = mapLoader.LoadMap ("A", "endPos", "startPos");
+			
+			nodeDiameter = mapData.nodeRadius * 2;
+			gridWorldSize = mapData.gridWorldSize;
+			// #nodes that can fit into the x-space
+			gridSizeX = Mathf.RoundToInt (gridWorldSize.x / nodeDiameter);
+			gridSizeY = Mathf.RoundToInt (gridWorldSize.y / nodeDiameter);
+			print(gridSizeX);
+			CreateGrid ();
+			
+			print (mapData.walkable [0, 0]);
+
+				}
+
+
+
 		// Draw gridWorldSize
 		Gizmos.DrawWireCube (transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
 
@@ -130,6 +152,8 @@ public class Grid : MonoBehaviour {
 			}
 		}
 	}
+
+
 	
 	public float GetCost(Node from, Node to) {
 		// TODO: Perhaps check if neighbours else return infinity

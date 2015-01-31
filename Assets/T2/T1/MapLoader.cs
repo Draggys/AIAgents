@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 
 public class MapLoader{
-	private string prefix = "Assets/Data/Discrete/";
+	private string prefix = Application.dataPath+"/Data/Discrete/";
 	private string postfix = ".txt";
 
 	public string mapName;
@@ -32,6 +32,10 @@ public class MapLoader{
 
 		MapData mapData = new MapData ();
 		mapData.walkable = new bool[(int) Math.Round (gridWorldSize.x), (int) Math.Round (gridWorldSize.y)];
+
+		if (!System.IO.File.Exists (mapName)) {
+			Debug.Log("File Not Found");
+				}
 
 		// Read map
 		int x = 0;
