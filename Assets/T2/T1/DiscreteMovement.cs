@@ -16,10 +16,15 @@ public class DiscreteMovement : MonoBehaviour {
 		Node startNode = grid.grid [Convert.ToInt32(grid.mapData.start.x), Convert.ToInt32 (grid.mapData.start.y)];
 		Node endNode = grid.grid [Convert.ToInt32 (grid.mapData.end.x), Convert.ToInt32 (grid.mapData.end.y)];
 
+		// Förstår inte varför startPos ligger i mapData.end och
+		// endPos ligger i mapData.start ....... något fel vid inläsningen i MapLoader
+		print ("start: " + startNode.gridPosX + ", " + startNode.gridPosY);
+		print (startNode.worldPosition);
+		print ("end: " + endNode.gridPosX + ", " + endNode.gridPosY);
+		print (endNode.worldPosition);
 
-		startNode = grid.grid [0, 1];
-		endNode = grid.grid [19, 17];
-		path = astar.AStarSearch (startNode, endNode);
+		path = astar.AStarSearch (endNode, startNode);
+	//	path = astar.BFS (startNode, endNode);
 	}
 
 	public void RequestPath(Node start, Node end) {
@@ -48,7 +53,7 @@ public class DiscreteMovement : MonoBehaviour {
 	void OnDrawGizmos() {
 		foreach (Node n in path) {
 			Gizmos.color = Color.black;
-			Gizmos.DrawCube (n.worldPosition, Vector3.one * (0.5f - .1f));
+			Gizmos.DrawCube (n.worldPosition, Vector3.one * (0.5f- .1f));
 		}
 	}
 }

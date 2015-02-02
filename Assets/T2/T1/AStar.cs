@@ -3,16 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class AStar{
+public class AStar : MonoBehaviour{
 	Node GetNode(Node currentNode, int dir) {
 		List<Node> directions = currentNode.neighbours;
 		return directions [dir];
 	}
 
 	public List<Node> AStarSearch(Node startNode, Node targetNode) {
-		if (startNode == targetNode) {
+		
+		print ("start node: " + startNode.gridPosX + ", " + startNode.gridPosY);
+		print ("target node: " + targetNode.gridPosX + ", " + targetNode.gridPosY);
+		print (targetNode.worldPosition);
+		if (startNode == targetNode)
 			return new List<Node>();
-		}
+		
 		PriorityQueue<Node, float> frontier = new PriorityQueue<Node, float> ();
 		Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node> ();
 		Dictionary<Node, float> costSoFar = new Dictionary<Node, float> ();
@@ -26,11 +30,15 @@ public class AStar{
 			currentNode = frontier.Dequeue ();
 
 			if(currentNode == targetNode) {
+				print("found goal");
 				return ConstructPath (startNode, targetNode, cameFrom);
 			}
 
 			foreach(Node node in currentNode.neighbours){
 				float newCost = costSoFar[currentNode] + GetCost (currentNode, node);
+				if(GetCost (currentNode, node) == 5) {
+					print ("SKIP COST");
+				}
 				if (!costSoFar.ContainsKey (node) || newCost < costSoFar[node]) {
 					if(node.walkable) {
 						costSoFar[node] = newCost;
@@ -42,6 +50,31 @@ public class AStar{
 			}
 		}
 
+		return new List<Node> ();
+	}
+
+	public List<Node> BFS(Node startNode, Node targetNode) {
+		Queue<Node> frontier = new Queue<Node> ();
+		frontier.Enqueue (startNode);
+		Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node> ();
+		cameFrom [startNode] = null;
+		
+		while (frontier.Count != 0) {
+			Node currentNode = frontier.Dequeue();
+			
+			if(currentNode == targetNode) {
+				return ConstructPath (startNode, targetNode, cameFrom);
+			}
+			
+			foreach(Node node in currentNode.neighbours) {
+				if(!cameFrom.ContainsKey (node)) {
+					if(node.walkable) {
+						frontier.Enqueue(node);
+						cameFrom[node] = currentNode;
+					}
+				}
+			}
+		}
 		return new List<Node> ();
 	}
 
@@ -64,22 +97,29 @@ public class AStar{
 	public float GetCost(Node from, Node to) {
 		// TODO: Perhaps check if neighbours else return infinity
 
-		/*
-		float straightCost = 14f;//10f;
+		float straightCost = 10f;//10f;
 		float diagonalCost = 14f;
-		
+		float skipCost = 5f;
+
+		if (from.gridPosX == to.gridPosX && from.gridPosY + 2 == to.gridPosY) // up
+			return skipCost;
+		if (from.gridPosX + 2 == to.gridPosX && from.gridPosY == to.gridPosY) // right
+			return skipCost;
+		if (from.gridPosX == to.gridPosX && from.gridPosY - 2 == to.gridPosY) // down
+			return skipCost;
+		if (from.gridPosX - 2 == to.gridPosX && from.gridPosY == to.gridPosY) // left
+			return skipCost;
+
 		if (from.gridPosX == to.gridPosX && from.gridPosY + 1 == to.gridPosY) // up
 			return straightCost;
 		if (from.gridPosX + 1 == to.gridPosX && from.gridPosY == to.gridPosY) // right
 			return straightCost;
 		if (from.gridPosX == to.gridPosX && from.gridPosY - 1 == to.gridPosY) // down
 			return straightCost;
-		if (from.gridPosX - 1 == to.gridPosX && from.gridPosY == to.gridPosY)
+		if (from.gridPosX - 1 == to.gridPosX && from.gridPosY == to.gridPosY) // left
 			return straightCost;
-		
-		return diagonalCost;
-		*/
 
-		return 1;
+		return diagonalCost;
+
 	}
 }

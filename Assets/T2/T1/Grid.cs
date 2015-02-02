@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class Grid : MonoBehaviour {
 
@@ -39,9 +40,9 @@ public class Grid : MonoBehaviour {
 				FillNeighbourhood12 (node);
 		}
 
-		foreach (Node node in grid) {
-		//	print (node.gridPosX + ", " + node.gridPosY + " Count: " + node.neighbours.Count);
-		}
+		Node n = grid [4, 3];
+		print (n.gridPosX + ", " + n.gridPosY + " Count: " + n.neighbours.Count);
+
 	}
 
 	public Node getNode(int gridPosX, int gridPosY) {
@@ -58,22 +59,19 @@ public class Grid : MonoBehaviour {
 	}
 
 	void CreateGrid() {
-		/*
 		grid = new Node[gridSizeX, gridSizeY];
-		Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2
-						- Vector3.forward * gridWorldSize.y / 2;
+		Vector3 worldTopLeft = transform.position - Vector3.right * gridWorldSize.x / 2
+			+ Vector3.forward * gridWorldSize.y / 2;
 
-		// Loop through all nodes to do collision check, see if walkable or not
 		for (int x = 0; x < gridSizeX; x++) {
 			for(int y = 0; y < gridSizeY; y++) {
-				Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius)
-					+ Vector3.forward * (y * nodeDiameter + nodeRadius);
+				Vector3 worldPoint = worldTopLeft + Vector3.right * (y * nodeDiameter + nodeRadius)
+					- Vector3.forward * (x * nodeDiameter + nodeRadius);
 				bool walkable = mapData.walkable[x ,y];
-				grid[x, y] = new Node(walkable, worldPoint, x, y);
+				grid[y, x] = new Node(walkable, worldPoint, y, x);
 			}
 		}
-		*/
-
+		/*
 		grid = new Node[gridSizeX, gridSizeY];
 		Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2
 			- Vector3.forward * gridWorldSize.y / 2;
@@ -87,11 +85,24 @@ public class Grid : MonoBehaviour {
 				grid[x, y] = new Node(walkable, worldPoint, x, y);
 			}
 		}
+		*/
 	}
 	
 	// Find node that player is currently standing on 
 	// I.e convert a world position into a grid coordinate
 	public Node NodeFromWorldPoint(Vector3 worldPosition) {
+		float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
+		float percentY = (worldPosition.z + gridWorldSize.y / 2) / gridWorldSize.y;
+
+		percentX = Mathf.Clamp01 (percentX);
+		percentY = Mathf.Clamp01 (percentY);
+
+		int x = Mathf.RoundToInt ((gridSizeX - 1) * percentX);
+		int y = Mathf.RoundToInt ((gridSizeY - 1) * percentY);
+
+
+		return grid[x, gridSizeY - 1 - y];
+		/*
 		// convert world position into a percentage for the x and why coordinate
 		//  how far along the grid it is
 		// far left 0, middle .5, right 1
@@ -110,6 +121,7 @@ public class Grid : MonoBehaviour {
 		int y = Mathf.RoundToInt ((gridSizeY - 1) * percentY);
 
 		return grid[x, y];
+		*/
 	}
 
 	void OnDrawGizmos() {
@@ -136,10 +148,22 @@ public class Grid : MonoBehaviour {
 			Node playerNode = NodeFromWorldPoint(player.position);
 			foreach (Node n in grid) {
 				Gizmos.color = (n.walkable) ? Color.white : Color.red;
-				if (playerNode == n)
+				if (playerNode == n){
 					Gizmos.color = Color.blue;
+				}
 				Gizmos.DrawCube (n.worldPosition, Vector3.one * (nodeDiameter - .1f));
 			}
+
+			/*
+			Node nod = grid[4, 3];
+			FillNeighbourhood4(nod);
+			Gizmos.color = Color.magenta;
+			Gizmos.DrawCube (nod.worldPosition, Vector3.one * (nodeDiameter - .1f));
+			foreach(Node n in nod.neighbours) {
+				Gizmos.color = Color.black;
+				Gizmos.DrawCube (n.worldPosition, Vector3.one * (nodeDiameter - .1f));
+			}
+			*/
 		}
 	}
 
@@ -150,24 +174,24 @@ public class Grid : MonoBehaviour {
 		int neighY = node.gridPosY;
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
-			                                                                      Vector3.forward));
+			                                                                      new Vector3(-2, 0, 0)));
 		neighX = node.gridPosX;
 		neighY = node.gridPosY + 2;
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
-			                                                                      Vector3.forward));
+			                                                                      new Vector3(0, 0, 2)));
 
 		neighX = node.gridPosX + 2;
 		neighY = node.gridPosY;
 		if (validIndex (neighX, neighY))
 			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
-			                                                                        Vector3.forward));       
+			                                                                      new Vector3(2, 0, 0)));       
 
 		neighX = node.gridPosX;
 		neighY = node.gridPosY - 2;
 		if (validIndex (neighX, neighY))
 			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
-			                                                                        Vector3.forward));   
+			                                                                      new Vector3(0, 0, -2)));   
 	}
 
 	public void FillNeighbourhood4(Node node) {
@@ -176,6 +200,7 @@ public class Grid : MonoBehaviour {
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
 			                                                                      Vector3.forward));
+
 		neighX = node.gridPosX + 1;
 		neighY = node.gridPosY;
 		if(validIndex (neighX, neighY))
@@ -193,6 +218,7 @@ public class Grid : MonoBehaviour {
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
 			                                                                      Vector3.left));
+
 	}
 
 	public void FillNeighbourhood8(Node node) {
