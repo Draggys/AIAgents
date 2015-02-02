@@ -8,10 +8,11 @@ public class CarWaypoint : MonoBehaviour {
 	public int model;
 	public float vel;
 	GameObject rightFrontWheel;
+	GameObject leftFrontWheel;
 
 	void Start () {
 		model = 0;
-		vel = 0.01f;
+		vel = 30f;
 		Vector3 pos1 = new Vector3 (0, 0, 30);
 		Vector3 pos2 = new Vector3 (30, 0, 30);
 		Vector3 pos3 = new Vector3 (30, 0, 0);
@@ -21,7 +22,8 @@ public class CarWaypoint : MonoBehaviour {
 		path.Add (pos2);
 
 		rightFrontWheel = GameObject.Find ("RightTopWheel");
-		
+		leftFrontWheel = GameObject.Find ("LeftTopWheel");
+
 		StartCoroutine ("Move", model);
 	}
 	public int index = 1;
@@ -37,16 +39,38 @@ public class CarWaypoint : MonoBehaviour {
 			}
 			// Kinematic car model
 			else if(model == 0) {
-				Quaternion phi = Quaternion.LookRotation (rightFrontWheel.transform.position - transform.position);
-				rightFrontWheel.transform.rotation = Quaternion.RotateTowards(rightFrontWheel.transform.rotation,
-				                                                              phi, 100 * Time.deltaTime);
 
+				Quaternion phi = Quaternion.LookRotation (current - rightFrontWheel.transform.position);
+				Quaternion lphi = Quaternion.LookRotation (current - leftFrontWheel.transform.position);
+				/*rightFrontWheel.transform.rotation = Quaternion.RotateTowards(rightFrontWheel.transform.rotation,
+				                                                              phi, 20 * Time.deltaTime);
+				  */  
+
+
+				rightFrontWheel.transform.eulerAngles = phi.eulerAngles;
+				leftFrontWheel.transform.eulerAngles = lphi.eulerAngles;
+				transform.eulerAngles = new Vector3(0, (vel / 1) * Mathf.Tan (phi.y), 0);
+				rightFrontWheel.transform.eulerAngles = new Vector3(0, 90, 0);
+
+				Vector3 dir = Vector3.Normalize(current - transform.position);
+				dir.x = dir.x + vel * Mathf.Cos (phi.y) * Time.deltaTime * 0.01f;
+				dir.z = dir.z + vel * Mathf.Sin (phi.y) * Time.deltaTime * 0.01f;
+				transform.position = transform.position + dir;
+				/*
+				float phi2 = Vector3.Angle (transform.right, rightFrontWheel.transform.forward);
+
+				//transform.eulerAngles = transform.eulerAngles + new Vector3(0, 30 * Mathf.Tan (phi), 0);
+
+*/
+				/*
 				float theta =  Mathf.Tan (phi.y);
 				print ("theta = " + theta);
 				transform.rotation = Quaternion.AngleAxis (theta, Vector3.up);
 
 				//float theta = (vel / 2) * Mathf.Tan (phi.y);
 				//transform.eulerAngles = new Vector3(0, theta, 0);
+*/
+
 
 				yield return null;
 			}
@@ -64,10 +88,11 @@ public class CarWaypoint : MonoBehaviour {
 			}
 
 			Gizmos.color = Color.red;
-			Gizmos.DrawLine (rightFrontWheel.transform.position, path[1]);
-
+			Gizmos.DrawLine (transform.position, transform.right);
 			Gizmos.color = Color.blue;
-			Gizmos.DrawLine (transform.position, path[1]);
+			Gizmos.DrawLine (rightFrontWheel.transform.position, rightFrontWheel.transform.forward + rightFrontWheel.transform.position);
+
+		
 		}
 	}
 }
