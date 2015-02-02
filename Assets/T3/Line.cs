@@ -9,7 +9,7 @@ public class Line {
 	public Line(Vector3 point1, Vector3 point2){
 		this.point1 = point1;
 		this.point2 = point2;
-		}
+	}
 
 
 	

@@ -3,11 +3,11 @@ using System.Collections;
 
 public class PolyReadTest : MonoBehaviour {
 
-	PolyMapLoader map;
+	PolyData polyData = null;
 	// Use this for initialization
-	void Start () {
-		map = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");	
-
+	void Awake () {
+		PolyMapLoader map = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");	
+		polyData = map.polyData;
 		/*
 		 * Debugging
 		map.polyData.printNodes ();
@@ -18,19 +18,18 @@ public class PolyReadTest : MonoBehaviour {
 	}
 	
 	void OnDrawGizmos() {
-		if (map.polyData.nodes != null) {
+		if (polyData != null) {
 			for(int i = 0; i <= 22; i++) {
 				Gizmos.color = Color.white;
-				Gizmos.DrawCube (map.polyData.nodes[i], Vector3.one);
-
+				Gizmos.DrawCube (polyData.nodes[i], Vector3.one);
 			}
-		}
-		Gizmos.color = Color.green;
-		Gizmos.DrawCube (map.polyData.start, Vector3.one);
-		
-		Gizmos.color = Color.red;
-		Gizmos.DrawCube (map.polyData.end, Vector3.one);
 
+			Gizmos.color = Color.green;
+			Gizmos.DrawCube (polyData.start, Vector3.one);
+			
+			Gizmos.color = Color.red;
+			Gizmos.DrawCube (polyData.end, Vector3.one);
+		}
 	}	
 }
 	
