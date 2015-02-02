@@ -16,12 +16,13 @@ public class PolyReadTest : MonoBehaviour {
 		map.polyData.printButtons ();
 		*/
 	}
-
+	
 	void OnDrawGizmos() {
 		if (map.polyData.nodes != null) {
-			foreach(Vector3 node in map.polyData.nodes) {
+			for(int i = 0; i <= 22; i++) {
 				Gizmos.color = Color.white;
-				Gizmos.DrawCube (node, Vector3.one);
+				Gizmos.DrawCube (map.polyData.nodes[i], Vector3.one);
+
 			}
 		}
 		Gizmos.color = Color.green;

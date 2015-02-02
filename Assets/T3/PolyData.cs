@@ -3,6 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PolyData {
+	// *Specific case* Nodes
+	// 0 -> 3 : top left
+	// 4 -> 9 : middle
+	// 10 -> 13 : middle right
+	// 14 -> 17 : down right
+	// 18 -> 22 : down left
 	public List<Vector3> nodes;
 	public Vector3 start;
 	public Vector3 end;
