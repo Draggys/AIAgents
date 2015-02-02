@@ -8,11 +8,13 @@ public class PolyData {
 	public Vector3 end;
 	public List<int> buttons;
 	public List<PolyNode> figures;
+	public List<Line> lines;
 
 	public PolyData() {
 		nodes = new List<Vector3> ();
 		buttons = new List<int> ();
 		figures = new List<PolyNode> ();
+		lines = new List<Line> ();
 	}
 
 	/*

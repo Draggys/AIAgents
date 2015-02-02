@@ -23,6 +23,9 @@ public class PolyMapLoader {
 
 		string xpos, ypos;
 		PolyNode curFigure = new PolyNode ();
+		int curFirstPoint = 0;
+		int index = 0;
+		bool newOne = true;
 		while ((xpos = xReader.ReadLine ()) != null) {
 			ypos = yReader.ReadLine (); // xFile and yFile matches each other
 
@@ -37,7 +40,7 @@ public class PolyMapLoader {
 
 			Vector3 curVec=new Vector3(float.Parse(xpos), 1f, float.Parse (ypos));
 
-			polyData.nodes.Add (curVec);
+
 			curFigure.vertices.Add(curVec);
 
 			polyData.buttons.Add (curButton);
@@ -46,7 +49,24 @@ public class PolyMapLoader {
 			if(curButton==3){
 				polyData.figures.Add(curFigure);
 				curFigure=new PolyNode();
+
+				Line newLine1= new Line(curVec,polyData.nodes[curFirstPoint]);
+				Line newLine2=new Line(polyData.nodes[index-1],curVec);
+
+				polyData.lines.Add(newLine1);
+				polyData.lines.Add(newLine2);
+				curFirstPoint=index+1;
+				newOne=true;
 			}
+			else{
+				if(polyData.nodes.Count!=0 && !newOne){
+					Line newLine=new Line(polyData.nodes[index-1],curVec);
+					polyData.lines.Add(newLine);
+				}
+				newOne=false;
+			}
+			polyData.nodes.Add (curVec);
+			index++;
 
 		}
 
