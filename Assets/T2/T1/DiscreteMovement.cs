@@ -25,6 +25,7 @@ public class DiscreteMovement : MonoBehaviour {
 
 		path = astar.AStarSearch (endNode, startNode);
 	//	path = astar.BFS (startNode, endNode);
+		print ("Time since Startup:"+Time.realtimeSinceStartup);
 	}
 
 	public void RequestPath(Node start, Node end) {
