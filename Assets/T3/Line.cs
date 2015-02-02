@@ -27,7 +27,7 @@ public class Line {
 		float qps = Line.vec2Cross ((q - p), s);
 
 		if (rsCross == 0) {
-
+			Debug.Log("rsCross eq 0");
 			//Collinear 
 			if(qpr==0){
 				float rr=Vector2.Dot(r,r);
@@ -47,11 +47,12 @@ public class Line {
 			}
 		} 
 		else {
+			Debug.Log("rsCross ne 0");
 			float t=qps/rsCross;
 			float u=qpr/rsCross;
 
 			//Meet if 0<=t<=1 and 0<=u<=1
-			if((t>=0 && t<=1) && (u>=0 && u<=1)){
+			if((t>0 && t<=1) && (u>0 && u<=1)){
 				return true;
 			}
 			else{

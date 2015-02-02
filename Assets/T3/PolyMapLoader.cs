@@ -19,10 +19,14 @@ public class PolyMapLoader {
 
 		System.IO.StreamReader xReader = new System.IO.StreamReader (xFile);
 		System.IO.StreamReader yReader = new System.IO.StreamReader (yFile);
+		System.IO.StreamReader buttonReader = new System.IO.StreamReader (buttonsFile);
 
 		string xpos, ypos;
+		PolyNode curFigure = new PolyNode ();
 		while ((xpos = xReader.ReadLine ()) != null) {
 			ypos = yReader.ReadLine (); // xFile and yFile matches each other
+
+			int curButton=int.Parse(buttonReader.ReadLine());
 
 			// Här funkar det inte
 			float xfloat;
@@ -31,11 +35,24 @@ public class PolyMapLoader {
 			xpos = xpos.Replace (",", ".");
 			ypos = ypos.Replace (",", ".");
 
-			polyData.nodes.Add (new Vector3(float.Parse(xpos), 1f, float.Parse (ypos)));
+			Vector3 curVec=new Vector3(float.Parse(xpos), 1f, float.Parse (ypos));
+
+			polyData.nodes.Add (curVec);
+			curFigure.vertices.Add(curVec);
+
+			polyData.buttons.Add (curButton);
+
+			//New Figure
+			if(curButton==3){
+				polyData.figures.Add(curFigure);
+				curFigure=new PolyNode();
+			}
+
 		}
 
 		xReader.Close ();
 		yReader.Close ();
+		buttonReader.Close ();
 
 		System.IO.StreamReader startReader = new System.IO.StreamReader (startFile);
 		string line;
@@ -50,12 +67,12 @@ public class PolyMapLoader {
 		polyData.end = new Vector3 (Mathf.Round(float.Parse(endPos [0])), 1f, float.Parse(endPos [1]));
 		endReader.Close ();
 
-		System.IO.StreamReader buttonReader = new System.IO.StreamReader (buttonsFile);
+		/*System.IO.StreamReader buttonReader = new System.IO.StreamReader (buttonsFile);
 		string button;
 		while ((button = buttonReader.ReadLine ()) != null) {
 			polyData.buttons.Add (Convert.ToInt32(button));
 		}
-		buttonReader.Close ();
+		buttonReader.Close ();*/
 	}
 
 

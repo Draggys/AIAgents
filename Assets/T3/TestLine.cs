@@ -4,9 +4,9 @@ using System.Collections;
 public class TestLine : MonoBehaviour {
 
 	Vector3 point1=new Vector3(0,1,0);
-	Vector3 point2 = new Vector3 (15, 1, 7);
-	Vector3 point3=new Vector3(5,1,-10);
-	Vector3 point4=new Vector3(10,2,10);
+	Vector3 point2 = new Vector3 (-5, 1, 5);
+	Vector3 point3=new Vector3(0,1,0);
+	Vector3 point4=new Vector3(5,1,10);
 
 	// Use this for initialization
 	void Start () {

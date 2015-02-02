@@ -7,10 +7,12 @@ public class PolyData {
 	public Vector3 start;
 	public Vector3 end;
 	public List<int> buttons;
+	public List<PolyNode> figures;
 
 	public PolyData() {
 		nodes = new List<Vector3> ();
 		buttons = new List<int> ();
+		figures = new List<PolyNode> ();
 	}
 
 	/*
