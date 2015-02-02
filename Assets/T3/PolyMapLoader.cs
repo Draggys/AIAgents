@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-public class PolyMapLoader : MonoBehaviour{
+public class PolyMapLoader {
 
 	private string prefix = Application.dataPath+"/Data/Polygonal/";
 	private string postfix = ".txt";
@@ -28,23 +28,10 @@ public class PolyMapLoader : MonoBehaviour{
 			float xfloat;
 			float yfloat;
 
-			// fulhax fail
-			/*
-			if(xpos.Length > 5)
-				xfloat = float.Parse (xpos.Substring (0, 5));
-			else
-				xfloat = float.Parse (xpos);
-			if(ypos.Length > 5)
-				yfloat = float.Parse (ypos.Substring(0, 5));
-			else
-				yfloat = float.Parse (ypos);
-			print (xpos.Substring (5));
-			print(xfloat + "vafan");
-			*/
-			print (float.Parse (xpos) + " innan vektor skapande");
-			//	polyData.nodes.Add(new Vector3(xfloat, 0, yfloat));
+			xpos = xpos.Replace (",", ".");
+			ypos = ypos.Replace (",", ".");
+
 			polyData.nodes.Add (new Vector3(float.Parse(xpos), 1f, float.Parse (ypos)));
-		
 		}
 
 		xReader.Close ();

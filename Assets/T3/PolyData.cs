@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class PolyData : MonoBehaviour {
+public class PolyData {
 	public List<Vector3> nodes;
 	public Vector3 start;
 	public Vector3 end;
@@ -13,6 +13,8 @@ public class PolyData : MonoBehaviour {
 		buttons = new List<int> ();
 	}
 
+	/*
+	 * For debugging purposes: Only works if class inherits MonoBehavior
 	public void printNodes() {
 		print ("#Nodes: " + nodes.Count);
 		foreach (Vector3 node in nodes) {
@@ -34,6 +36,5 @@ public class PolyData : MonoBehaviour {
 			print (i);
 		}
 	}
-
-
+	*/
 }
