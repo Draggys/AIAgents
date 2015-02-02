@@ -24,10 +24,6 @@ public class PolyMapLoader {
 		while ((xpos = xReader.ReadLine ()) != null) {
 			ypos = yReader.ReadLine (); // xFile and yFile matches each other
 
-			// Här funkar det inte
-			float xfloat;
-			float yfloat;
-
 			xpos = xpos.Replace (",", ".");
 			ypos = ypos.Replace (",", ".");
 

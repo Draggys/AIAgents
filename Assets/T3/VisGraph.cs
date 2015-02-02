@@ -98,7 +98,7 @@ public class VisGraph : MonoBehaviour {
 						foreach(Vector3 neighVertex in neigh.vertices) {
 							Line potentialLine = new Line(vertex, neighVertex);
 							if(!IntersectsWithAnyLine(potentialLine)){
-								walkableLines.Add (potentialLine);
+								walkableLines.Add (potentialLine); //debugging
 							}
 						}
 					}
@@ -116,6 +116,7 @@ public class VisGraph : MonoBehaviour {
 		}
 		return false;
 	}
+	
 
 	void OnDrawGizmos() {
 		if (polyData != null) {
