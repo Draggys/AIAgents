@@ -30,15 +30,11 @@ public class AStar : MonoBehaviour{
 			currentNode = frontier.Dequeue ();
 
 			if(currentNode == targetNode) {
-				print("found goal");
 				return ConstructPath (startNode, targetNode, cameFrom);
 			}
 
 			foreach(Node node in currentNode.neighbours){
 				float newCost = costSoFar[currentNode] + GetCost (currentNode, node);
-				if(GetCost (currentNode, node) == 5) {
-					print ("SKIP COST");
-				}
 				if (!costSoFar.ContainsKey (node) || newCost < costSoFar[node]) {
 					if(node.walkable) {
 						costSoFar[node] = newCost;

@@ -52,12 +52,13 @@ public class MapLoader{
 			x++;
 		}
 
+		file.Close ();
 
 		// read start and end pos
 		string start = System.IO.File.ReadAllText (startName);
 		string[] startList = start.Split (' ');
 		mapData.start = new Vector2(float.Parse (startList[0]) - 1, float.Parse (startList[1]) - 1);
-		
+
 		string end = System.IO.File.ReadAllText (endName);
 		string[] endList = end.Split (' ');
 		mapData.end = new Vector2 (float.Parse (endList [0]) - 1, float.Parse (endList [1]) - 1);
