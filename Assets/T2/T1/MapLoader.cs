@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 
 public class MapLoader{
-	private string prefix = "Assets/Data/Discrete/";
+	private string prefix = Application.dataPath+"/Data/Discrete/";
 	private string postfix = ".txt";
 
 	public string mapName;
@@ -33,6 +33,10 @@ public class MapLoader{
 		MapData mapData = new MapData ();
 		mapData.walkable = new bool[(int) Math.Round (gridWorldSize.x), (int) Math.Round (gridWorldSize.y)];
 
+		if (!System.IO.File.Exists (mapName)) {
+			Debug.Log("File Not Found");
+		}
+
 		// Read map
 		int x = 0;
 		string line;
@@ -40,7 +44,6 @@ public class MapLoader{
 		while ((line = file.ReadLine ()) != null) {
 			string[] walkable = line.Split (' ');
 			for(int y = 0; y < walkable.Length; y++) {
-				//print ("x: " + x + " y: " + y + " walkable: " + walkable[y]);
 				if(walkable[y].Equals ("1"))
 					mapData.walkable[x, y] = false;
 				else
@@ -53,65 +56,14 @@ public class MapLoader{
 		// read start and end pos
 		string start = System.IO.File.ReadAllText (startName);
 		string[] startList = start.Split (' ');
-		mapData.start = new Vector2(float.Parse (startList[0]), float.Parse (startList[1]));
+		mapData.start = new Vector2(float.Parse (startList[0]) - 1, float.Parse (startList[1]) - 1);
 		
-		string end = System.IO.File.ReadAllText (startName);
+		string end = System.IO.File.ReadAllText (endName);
 		string[] endList = end.Split (' ');
-		mapData.end = new Vector2 (float.Parse (endList [0]), float.Parse (endList [1]));
-		
-		
-		mapData.gridWorldSize = gridWorldSize;
-		mapData.nodeRadius = nodeRadius;
-		return mapData;
-	}
-	/*
-	public MapData LoadMap(string mapName, string startName, string endName) 
-	{
-		mapName = prefix + mapName + postfix;
-		startName = prefix + startName + postfix;
-		endName = prefix + endName + postfix;
-
-		// read map
-		string map = System.IO.File.ReadAllText (mapName);
-		string[] walkable = map.Split (' ');
-
-		MapData mapData = new MapData();
-		mapData.walkable = new bool[(int) Math.Round (gridWorldSize.x), (int) Math.Round (gridWorldSize.y)];
-
-		print (walkable.Length);
-
-		int i = 0;
-		int x = 0;
-		while (x < maxX) {
-			for(int y = 0; y < maxY; y++) {
-				mapData.walkable[x, y] = true;
-				if(walkable[i].Equals ("0")) {
-					mapData.walkable[x, y] = true;
-				}
-				else {
-					mapData.walkable[x, y] = true;
-				}
-				i++;
-			}
-			x++;
-		}
-		for(int f = 0; f < 5; f++) {
-			print ("grrr: " + f + " : " + mapData.walkable[0, f].ToString ());
-		}
-
-		// read start and end pos
-		string start = System.IO.File.ReadAllText (startName);
-		string[] startList = start.Split (' ');
-		mapData.start = new Vector2(float.Parse (startList[0]), float.Parse (startList[1]));
-
-		string end = System.IO.File.ReadAllText (startName);
-		string[] endList = end.Split (' ');
-		mapData.end = new Vector2 (float.Parse (endList [0]), float.Parse (endList [1]));
-
+		mapData.end = new Vector2 (float.Parse (endList [0]) - 1, float.Parse (endList [1]) - 1);
 
 		mapData.gridWorldSize = gridWorldSize;
 		mapData.nodeRadius = nodeRadius;
 		return mapData;
 	}
-	*/
 }
