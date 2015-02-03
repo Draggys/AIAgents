@@ -208,8 +208,9 @@ public class VisGraph : MonoBehaviour {
 			}
 		}
 
+		Gizmos.color = Color.red;
+		Gizmos.DrawLine (polyData.start, path [0].pos);
 		if (path != null) {
-			Gizmos.color = Color.red;
 			for(int i = 0; i < path.Count - 1; i++) {
 				Gizmos.DrawLine (path[i].pos, path[i + 1].pos);
 			}
