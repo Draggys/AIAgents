@@ -7,14 +7,28 @@ public class VisGraph : MonoBehaviour {
 	PolyData polyData = null;
 
 	List<Line> walkableLines;
+	VGraph graph;
+	PolygonalAStar pathFinder = new PolygonalAStar();
+
+	public float kinematic_vel;
+	List<PolyNode> path = null;
 
 	void Start() {
 		PolyMapLoader loader = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
 		polyData = loader.polyData;
+		graph = new VGraph();
 
 		CreateObstacles ();
 		ConstructWalkableLines ();
-		print ("Walkable lines: " + walkableLines.Count);
+	//	print ("Walkable lines: " + walkableLines.Count);
+//		graph.PrintGraph ();
+
+		kinematic_vel = 20f;
+		path = pathFinder.AStarSearch (polyData.start, polyData.end, graph);
+		print ("path length: " + path.Count);
+
+		transform.position = polyData.start;
+		StartCoroutine ("KinematicPointMovement");
 	}
 
 	// *Specific case* Nodes
@@ -86,7 +100,19 @@ public class VisGraph : MonoBehaviour {
 			else 
 				obstacle.edges.Add (new Line(polyData.nodes[i], polyData.nodes[18]));
 		}
-		obstacles.Add (obstacle);
+		obstacles.Add (new Obstacle(obstacle));
+		obstacle.edges.Clear ();
+		obstacle.vertices.Clear ();
+
+		obstacle.id = 23;
+		obstacle.vertices.Add (polyData.start);
+		obstacles.Add (new Obstacle(obstacle));
+		obstacle.edges.Clear ();
+		obstacle.vertices.Clear ();
+
+		obstacle.id = 24;
+		obstacle.vertices.Add (polyData.end);
+		obstacles.Add (new Obstacle (obstacle));
 	}
 
 	void ConstructWalkableLines() {
@@ -96,19 +122,29 @@ public class VisGraph : MonoBehaviour {
 		// See if a line can be drawn from each vertex from the current obstacle to 
 		// it's neighbours' vertices.
 		// If the line does not intersect with any other line, add it to walkableLines
+		int index = 0;
 		foreach (Obstacle obs in obstacles) {
 			foreach (Obstacle neigh in obstacles) {
 				if(obs != neigh) {
 					foreach(Vector3 vertex in obs.vertices) {
+						PolyNode currentNode = new PolyNode();
+						currentNode.pos = vertex;
 						foreach(Vector3 neighVertex in neigh.vertices) {
 							Line potentialLine = new Line(vertex, neighVertex);
 							if(!IntersectsWithAnyLine(potentialLine)){
 								walkableLines.Add (potentialLine); //debugging
+
+								currentNode.neighbours.Add (neighVertex);
 							}
 						}
+						if(graph.graph.ContainsKey (vertex)) 
+							graph.graph[vertex].neighbours.AddRange (currentNode.neighbours);
+						else
+							graph.graph[vertex] = currentNode;
 					}
 				}
 			}
+			index++;
 		}
 	}
 
@@ -128,15 +164,36 @@ public class VisGraph : MonoBehaviour {
 		}
 		return false;
     }
-    
+
+	IEnumerator KinematicPointMovement() {
+		int index = 0;
+		Vector3 current = path[index].pos;
+		while (true) {
+			if(transform.position == current) {
+				index++;
+				if(index > path.Count)
+					yield break;
+				current = path[index].pos;
+			}
+			transform.position = Vector3.MoveTowards (transform.position, current, kinematic_vel * Time.deltaTime);
+			yield return null;
+		}
+	}
     
     void OnDrawGizmos() {
+		if (walkableLines != null) {
+			foreach(Line line in walkableLines) {
+				Gizmos.color = Color.white;
+				Gizmos.DrawLine(line.point1, line.point2);
+			}
+		}
+
 		if (polyData != null) {
 			for(int i = 0; i <= 22; i++) {
 				Gizmos.color = Color.white;
 				Gizmos.DrawCube (polyData.nodes[i], Vector3.one);
 			}
-			
+		
 			Gizmos.color = Color.green;
 			Gizmos.DrawCube (polyData.start, Vector3.one);
 			
@@ -151,11 +208,12 @@ public class VisGraph : MonoBehaviour {
 			}
 		}
 
-		if (walkableLines != null) {
-			foreach(Line line in walkableLines) {
-				Gizmos.color = Color.white;
-				Gizmos.DrawLine(line.point1, line.point2);
+		if (path != null) {
+			Gizmos.color = Color.red;
+			for(int i = 0; i < path.Count - 1; i++) {
+				Gizmos.DrawLine (path[i].pos, path[i + 1].pos);
 			}
 		}
+
 	}	
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class AStar : MonoBehaviour{
+public class AStar{
 	Node GetNode(Node currentNode, int dir) {
 		List<Node> directions = currentNode.neighbours;
 		return directions [dir];
@@ -11,9 +11,9 @@ public class AStar : MonoBehaviour{
 
 	public List<Node> AStarSearch(Node startNode, Node targetNode) {
 		
-		print ("start node: " + startNode.gridPosX + ", " + startNode.gridPosY);
-		print ("target node: " + targetNode.gridPosX + ", " + targetNode.gridPosY);
-		print (targetNode.worldPosition);
+//		print ("start node: " + startNode.gridPosX + ", " + startNode.gridPosY);
+//		print ("target node: " + targetNode.gridPosX + ", " + targetNode.gridPosY);
+//		print (targetNode.worldPosition);
 		if (startNode == targetNode)
 			return new List<Node>();
 		
