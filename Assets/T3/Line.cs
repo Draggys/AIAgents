@@ -19,28 +19,6 @@ public class Line {
 		Vector2 q = Line.getVector2 (otherLine.point1);
 		Vector2 s = Line.getVector2 (otherLine.point2) - q;
 
-		/*
-		float rsCross = Line.vec2Cross (r, s);
-		float srCross = Line.vec2Cross (s, r);
-		float qpr = Line.vec2Cross ((q - p), r);
-		float qps = Line.vec2Cross ((q - p), s);
-		float pqs = Line.vec2Cross ((p - q), s);
-
-		float t = qps / rsCross;
-		float u = qpr / srCross;
-
-		if (rsCross == 0 && qpr == 0) { // Collinear
-			if(0 <= qpr && qpr <= Vector2.Dot (r, r)) {
-				return true;
-			}
-			if(0 <= pqs && pqs <= Vector2.Dot (s, s)) {
-				return true;
-			}
-		}
-		if (rsCross != 0 && 0 <= t && t <= 1 && 0 <= u && u <= 1) {
-			return true;
-		}
-		*/
 		float rsCross = Line.vec2Cross (r, s);
 		float qpr = Line.vec2Cross ((q - p), r);
 		float qps = Line.vec2Cross ((q - p), s);
