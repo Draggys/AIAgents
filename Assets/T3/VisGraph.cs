@@ -171,7 +171,7 @@ public class VisGraph : MonoBehaviour {
 		while (true) {
 			if(transform.position == current) {
 				index++;
-				if(index > path.Count)
+				if(index >= path.Count)
 					yield break;
 				current = path[index].pos;
 			}
@@ -208,13 +208,12 @@ public class VisGraph : MonoBehaviour {
 			}
 		}
 
-		Gizmos.color = Color.red;
-		Gizmos.DrawLine (polyData.start, path [0].pos);
 		if (path != null) {
+			Gizmos.color = Color.red;
+			Gizmos.DrawLine (polyData.start, path [0].pos);
 			for(int i = 0; i < path.Count - 1; i++) {
 				Gizmos.DrawLine (path[i].pos, path[i + 1].pos);
 			}
 		}
-
 	}	
 }
