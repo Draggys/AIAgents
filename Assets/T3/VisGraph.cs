@@ -14,7 +14,7 @@ public class VisGraph : MonoBehaviour {
 
 		CreateObstacles ();
 		ConstructWalkableLines ();
-		print (walkableLines.Count);
+		print ("Walkable lines: " + walkableLines.Count);
 	}
 
 	// *Specific case* Nodes
@@ -38,6 +38,7 @@ public class VisGraph : MonoBehaviour {
 
 		obstacles.Add (new Obstacle(obstacle));
 		obstacle.edges.Clear ();
+		obstacle.vertices.Clear ();
 
 		for(int i = 4; i <= 9; i++) {
 			obstacle.id = i;
@@ -49,6 +50,7 @@ public class VisGraph : MonoBehaviour {
 		}
 		obstacles.Add (new Obstacle(obstacle));
 		obstacle.edges.Clear ();
+		obstacle.vertices.Clear ();
 
 		for(int i = 10; i <= 13; i++) {
 			obstacle.id = i;
@@ -61,6 +63,8 @@ public class VisGraph : MonoBehaviour {
 
 		obstacles.Add (new Obstacle(obstacle));
 		obstacle.edges.Clear ();
+		obstacle.vertices.Clear ();
+
 		for(int i = 14; i <= 17; i++) {
 			obstacle.id = i;
 			obstacle.vertices.Add (polyData.nodes[i]);
@@ -72,7 +76,8 @@ public class VisGraph : MonoBehaviour {
 		
 		obstacles.Add (new Obstacle(obstacle));
 		obstacle.edges.Clear ();
-	
+		obstacle.vertices.Clear ();
+
 		for(int i = 18; i <= 22; i++) {
 			obstacle.id = i;
 			obstacle.vertices.Add (polyData.nodes[i]);
@@ -109,16 +114,46 @@ public class VisGraph : MonoBehaviour {
 
 	bool IntersectsWithAnyLine(Line myLine) {
 		foreach (Obstacle obs in obstacles) {
+			foreach (Line line in obs.edges) {
+				if (myLine.point1 == line.point1 || myLine.point1 == line.point2)
+					continue;
+				if (myLine.point2 == line.point1 || myLine.point2 == line.point2)
+					continue;
+
+				if (myLine.intersect (line)) {
+					//print (myLine.point1 + ", " + myLine.point2 + " vs " + line.point1 + ", " + line.point2);
+					return true;
+				}
+			}
+		}
+		return false;
+		/*
+		foreach (Line line in obstacles[0].edges) {
+			if(myLine.point1 == line.point1 || myLine.point1 == line.point2)
+				continue;
+			if(myLine.point2 == line.point1 || myLine.point2 == line.point1)
+				continue;
+
+			print (myLine.point1 + ", " + myLine.point2 + " vs " + line.point1 + ", " + line.point2);
+			if(myLine.intersect (line)) {
+				return true;
+			}
+		}
+		return false;
+		*/
+		/*
+		foreach (Obstacle obs in obstacles) {
 			foreach(Line line in obs.edges) {
-				if(myLine != line && line.intersect (myLine))
+				if(line.intersect (myLine))
 					return true;
 			}
 		}
 		return false;
-	}
-	
-
-	void OnDrawGizmos() {
+		*/
+    }
+    
+    
+    void OnDrawGizmos() {
 		if (polyData != null) {
 			for(int i = 0; i <= 22; i++) {
 				Gizmos.color = Color.white;
@@ -136,6 +171,13 @@ public class VisGraph : MonoBehaviour {
 				foreach(Line line in ob.edges) {
 					Gizmos.DrawLine (line.point1, line.point2);
 				}
+			}
+		}
+
+		if (walkableLines != null) {
+			foreach(Line line in walkableLines) {
+				Gizmos.color = Color.red;
+				Gizmos.DrawLine(line.point1, line.point2);
 			}
 		}
 	}	

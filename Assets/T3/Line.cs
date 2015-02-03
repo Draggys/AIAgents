@@ -10,24 +10,41 @@ public class Line {
 		this.point1 = point1;
 		this.point2 = point2;
 	}
-
-
 	
+
 	public bool intersect(Line otherLine){
-
-		Vector2 p = Line.getVector2(point1);
-		Vector2 r = Line.getVector2(point2)-p;
-
+		Vector2 p = Line.getVector2 (point1);
+		Vector2 r = Line.getVector2 (point2) - p;
+		
 		Vector2 q = Line.getVector2 (otherLine.point1);
 		Vector2 s = Line.getVector2 (otherLine.point2) - q;
 
-
+		/*
 		float rsCross = Line.vec2Cross (r, s);
-		float qpr=Line.vec2Cross((q-p),r);
+		float srCross = Line.vec2Cross (s, r);
+		float qpr = Line.vec2Cross ((q - p), r);
 		float qps = Line.vec2Cross ((q - p), s);
+		float pqs = Line.vec2Cross ((p - q), s);
 
+		float t = qps / rsCross;
+		float u = qpr / srCross;
+
+		if (rsCross == 0 && qpr == 0) { // Collinear
+			if(0 <= qpr && qpr <= Vector2.Dot (r, r)) {
+				return true;
+			}
+			if(0 <= pqs && pqs <= Vector2.Dot (s, s)) {
+				return true;
+			}
+		}
+		if (rsCross != 0 && 0 <= t && t <= 1 && 0 <= u && u <= 1) {
+			return true;
+		}
+		*/
+		float rsCross = Line.vec2Cross (r, s);
+		float qpr = Line.vec2Cross ((q - p), r);
+		float qps = Line.vec2Cross ((q - p), s);
 		if (rsCross == 0) {
-
 			//Collinear 
 			if(qpr==0){
 				float rr=Vector2.Dot(r,r);
@@ -58,8 +75,8 @@ public class Line {
 				return false;
 			}
 				}
-
 		}
+
 
 
 	public static float vec2Cross(Vector2 vec1,Vector2 vec2){
@@ -67,7 +84,7 @@ public class Line {
 		float res = vec1.x * vec2.y - vec1.y * vec2.x;
 
 		return res;
-		}
+	}
 
 	//To get the Vector2 representation
 	public static Vector2 getVector2(Vector3 vec){
