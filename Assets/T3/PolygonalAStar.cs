@@ -45,7 +45,11 @@ public class PolygonalAStar{
 	float Heuristic(Vector3 A, Vector3 B) {
 		return Mathf.Abs (A.x - B.x) + Mathf.Abs (A.y - B.y);
 	}
-	
+
+	public float GetCost(PolyNode from, PolyNode to) {
+		return Mathf.Abs (to.pos.x - from.pos.x) + Mathf.Abs (to.pos.y - from.pos.y);
+	}
+
 	List<PolyNode> ConstructPath(PolyNode start, PolyNode target, Dictionary<PolyNode, PolyNode> cameFrom) {
 		PolyNode currentNode = target;
 		List<PolyNode> path = new List<PolyNode>();
@@ -58,7 +62,5 @@ public class PolygonalAStar{
 		return path;
 	}
 	
-	public float GetCost(PolyNode from, PolyNode to) {
-		return Mathf.Abs (to.pos.x - from.pos.x) + Mathf.Abs (to.pos.y - from.pos.y);
-	}
+
 }

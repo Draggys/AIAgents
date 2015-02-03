@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 public class VisGraph : MonoBehaviour {
 
+	public Model model;
+
 	List<Obstacle> obstacles = new List<Obstacle> ();
 	PolyData polyData = null;
 
@@ -11,7 +13,7 @@ public class VisGraph : MonoBehaviour {
 	PolygonalAStar pathFinder = new PolygonalAStar();
 
 	public float kinematic_vel;
-	List<PolyNode> path = null;
+	public List<PolyNode> path = null;
 
 	void Start() {
 		PolyMapLoader loader = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
@@ -25,10 +27,13 @@ public class VisGraph : MonoBehaviour {
 
 		kinematic_vel = 20f;
 		path = pathFinder.AStarSearch (polyData.start, polyData.end, graph);
-		print ("path length: " + path.Count);
+	//	print ("path length: " + path.Count);
 
+		// Choose model
 		transform.position = polyData.start;
-		StartCoroutine ("KinematicPointMovement");
+		model = gameObject.AddComponent<KinematicPointModel> ();
+		model.SetPath (path);
+		model.StartCoroutineMove ();
 	}
 
 	// *Specific case* Nodes
@@ -164,21 +169,6 @@ public class VisGraph : MonoBehaviour {
 		}
 		return false;
     }
-
-	IEnumerator KinematicPointMovement() {
-		int index = 0;
-		Vector3 current = path[index].pos;
-		while (true) {
-			if(transform.position == current) {
-				index++;
-				if(index >= path.Count)
-					yield break;
-				current = path[index].pos;
-			}
-			transform.position = Vector3.MoveTowards (transform.position, current, kinematic_vel * Time.deltaTime);
-			yield return null;
-		}
-	}
     
     void OnDrawGizmos() {
 		if (walkableLines != null) {
