@@ -127,29 +127,6 @@ public class VisGraph : MonoBehaviour {
 			}
 		}
 		return false;
-		/*
-		foreach (Line line in obstacles[0].edges) {
-			if(myLine.point1 == line.point1 || myLine.point1 == line.point2)
-				continue;
-			if(myLine.point2 == line.point1 || myLine.point2 == line.point1)
-				continue;
-
-			print (myLine.point1 + ", " + myLine.point2 + " vs " + line.point1 + ", " + line.point2);
-			if(myLine.intersect (line)) {
-				return true;
-			}
-		}
-		return false;
-		*/
-		/*
-		foreach (Obstacle obs in obstacles) {
-			foreach(Line line in obs.edges) {
-				if(line.intersect (myLine))
-					return true;
-			}
-		}
-		return false;
-		*/
     }
     
     
@@ -176,7 +153,7 @@ public class VisGraph : MonoBehaviour {
 
 		if (walkableLines != null) {
 			foreach(Line line in walkableLines) {
-				Gizmos.color = Color.red;
+				Gizmos.color = Color.white;
 				Gizmos.DrawLine(line.point1, line.point2);
 			}
 		}
