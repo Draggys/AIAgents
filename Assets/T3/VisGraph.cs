@@ -190,7 +190,7 @@ public class VisGraph : MonoBehaviour {
 
 		if (polyData != null) {
 			for(int i = 0; i <= 22; i++) {
-				Gizmos.color = Color.white;
+				Gizmos.color = Color.black;
 				Gizmos.DrawCube (polyData.nodes[i], Vector3.one);
 			}
 		

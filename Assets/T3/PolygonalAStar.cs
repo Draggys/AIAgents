@@ -59,6 +59,6 @@ public class PolygonalAStar{
 	}
 	
 	public float GetCost(PolyNode from, PolyNode to) {
-		return 1;
+		return Mathf.Abs (to.pos.x - from.pos.x) + Mathf.Abs (to.pos.y - from.pos.y);
 	}
 }
