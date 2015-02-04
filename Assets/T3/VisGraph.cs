@@ -31,7 +31,8 @@ public class VisGraph : MonoBehaviour {
 
 		// Choose model
 		transform.position = polyData.start;
-		model = gameObject.AddComponent<KinematicPointModel> ();
+		//model = gameObject.AddComponent<KinematicPointModel> ();
+		model = gameObject.AddComponent<DynamicPointModel> ();
 		model.SetPath (path);
 		model.StartCoroutineMove ();
 	}
