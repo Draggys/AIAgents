@@ -13,8 +13,8 @@ public class DynamicPointModel : MonoBehaviour, Model {
 	List<PolyNode> path;
 
 	public DynamicPointModel() {
-		accX = 0.5f;
-		accY = 0.5f;
+		accX = 0.1f;
+		accY = 0.1f;
 	}
 	
 	public void SetPath(List<PolyNode> path) {

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class KinematicPointModel : MonoBehaviour, Model {
 
 	List<PolyNode> path;
-	Transform trans;
 	public int vel;
 
 	public KinematicPointModel() {
