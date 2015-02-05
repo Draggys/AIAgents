@@ -5,9 +5,15 @@ using System.Collections.Generic;
 public class Waypoints : MonoBehaviour {
 	
 	List<Vector3> path;
+	private List<Vector3> velAtPoint;
+
+	public float goalInterval;
+
+
 	//For Kinematic Point Model
 	public float kinematic_vel;
 	//For Dynamic Point Model
+	public float accMax;
 	public float dynFx ;
 	public float dynFy ;
 	public float accX;
@@ -45,6 +51,10 @@ public class Waypoints : MonoBehaviour {
 		path.Add (pos4);
 		path.Add (pos5);
 		path.Add (new Vector3 (-17, 1, -17));
+
+		velAtPoint=new List<Vector3>();
+
+
 		
 		//StartCoroutine ("Move", model);
 	}
@@ -65,19 +75,26 @@ public class Waypoints : MonoBehaviour {
 		float velX = 0;
 		float velY = 0;
 		float dynVel = 0;
+		Vector3 dynPVel = new Vector3 (0,0,0);
+
+		//test
+		Vector3 goalVel = new Vector3 (1, 0, 1);
+
 		Vector3 current = path[index];
 		while (true) {
-			if(transform.position == current || carMadeIt) {
+			float distance=Vector3.Distance(transform.position,current);
+			if(distance<=goalInterval*Time.deltaTime || carMadeIt) {
 				index++;
 				carMadeIt=false;
 				Debug.Log("Arrived at position");
+				Debug.Log ("DynVel:"+dynVel);
 				if(index >= path.Count) {
 					isRunning=false;
 					yield break;
 				}
 				velX=0;
 				velY=0;
-				dynVel=0;
+				//dynVel=0;
 				current = path[index];
 				Debug.Log("Current:"+current);
 			}
@@ -95,27 +112,60 @@ public class Waypoints : MonoBehaviour {
 			// Dynamic point
 			else if(model == 2) {
 				Vector3 dir;
-				
-				if(Vector3.Distance (current, transform.position) < velX*Time.deltaTime) {
-					dir = current - transform.position;
-					transform.position = current;
-					yield return new WaitForSeconds(0.5f);
-				}
-				/*Vector3 diffVec=current-transform.position;
-				if(diffVec.x<=velX && diffVec.y<=velY){
-					transform.position=current;
-				}*/
-				else {
-					velX=velX+accX;
+
+				float distanceToTarget=Vector3.Distance (current, transform.position);
+				/*
+				REAL CODE BELOW!!
+
+
+					float neededDistToStop=(Mathf.Pow(velX,2)/2*accX);
+					//Accelerate
+					if(distanceToTarget>neededDistToStop){
+						velX=velX+accX;
+					}
+					//Decelerate
+					else{
+						//Debug.Log("Decelerate");
+						velX=velX-accX;
+					}
 					//Debug.Log("VelX:"+velX);
 					//velY=velY+accY;
 					dir = Vector3.Normalize (current - transform.position);
 					//Since the vector is normalized it should be the same velocity for both
 					dir.x = (dir.x * velX) * Time.deltaTime;
 					dir.z = (dir.z * velX) *  Time.deltaTime;
-					
+
 					transform.position = (transform.position + dir);
+
+				*/
+
+				//Test Code
+
+
+				dir=Vector3.Normalize(current-transform.position);
+
+				//Debug.Log ("Dir:"+dir);
+
+				float distToSlow=(Mathf.Pow(dynVel,2)-4.0f)/(2*accMax);
+
+				if(distanceToTarget>distToSlow){
+					dynVel=dynVel+accMax;
 				}
+				else{
+					dynVel=dynVel-accMax;
+				}
+
+				dynPVel.x=dynPVel.x*dynVel+dynVel*dir.x;
+				dynPVel.z=dynPVel.z*dynVel+dynVel*dir.z;
+
+
+				dynPVel=Vector3.Normalize(dynPVel);
+
+				//Debug.Log ("DynVel:"+dynPVel);
+
+				transform.position=transform.position+dynPVel;
+
+
 				yield return null;
 			}
 			// Differential drive
@@ -123,12 +173,12 @@ public class Waypoints : MonoBehaviour {
 			else if(model == 3) {
 				Vector3 dir;
 				Quaternion theta = Quaternion.LookRotation (current - transform.position);
-				if(Vector3.Distance (current, transform.position) < vel*Time.deltaTime && theta==transform.rotation) {
+				/*if(Vector3.Distance (current, transform.position) < vel*Time.deltaTime && theta==transform.rotation) {
 					dir = current - transform.position;
 					//Debug.Log("Jump");
 					transform.position = current;
-				}
-				else {
+				}*/
+				//else {
 
 					if(transform.rotation!=theta){
 						transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, angleVel * Time.deltaTime);
@@ -151,7 +201,7 @@ public class Waypoints : MonoBehaviour {
 						transform.position = (transform.position + dir);
 					}
 					*/
-				}
+				//}
 				yield return null;
 			}
 			//Kinematic Car Model
@@ -161,12 +211,12 @@ public class Waypoints : MonoBehaviour {
 				float wheelAngleRad=maxWheelAngle*(Mathf.PI/180);
 				float dTheta=(vel/carLength)*Mathf.Tan(wheelAngleRad);
 				Quaternion theta = Quaternion.LookRotation (current - transform.position);
-				if(Vector3.Distance (current, transform.position) < vel*Time.deltaTime ) {
+				/*if(Vector3.Distance (current, transform.position) < vel*Time.deltaTime ) {
 					dir = current - transform.position;
 					Debug.Log("Jump");
 					transform.position = current;
-				}
-				else {
+				}*/
+				//else {
 					
 					if(transform.rotation!=theta){
 						transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, dTheta * Time.deltaTime);
@@ -192,24 +242,34 @@ public class Waypoints : MonoBehaviour {
 						carMadeIt=true;
 					}
 
-			}
+			//}
 				yield return null;
 			}
 			//Dynamic Car Model
 			else if(model == 5){
 				Vector3 dir;
 
-				dynVel=dynVel+(dynF/dynMass);
+				float distanceToTarget=Vector3.Distance (current, transform.position);
+
+
+				float neededDistToStop=(Mathf.Pow(dynVel,2)/2*(dynF/dynMass));
+				if(distanceToTarget>neededDistToStop){
+					dynVel=dynVel+(dynF/dynMass);
+				}
+				else{
+					dynVel=dynVel-(dynF/dynMass);
+				}
+
 
 				float wheelAngleRad=maxWheelAngle*(Mathf.PI/180);
 				float dTheta=(dynVel/carLength)*Mathf.Tan(wheelAngleRad);
 				Quaternion theta = Quaternion.LookRotation (current - transform.position);
-				if(Vector3.Distance (current, transform.position) < dynVel*Time.deltaTime ) {
+				/*if(Vector3.Distance (current, transform.position) < dynVel*Time.deltaTime ) {
 					dir = current - transform.position;
 					Debug.Log("Jump");
 					transform.position = current;
-				}
-				else {
+				}*/
+				//else {
 					
 					if(transform.rotation!=theta){
 						transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, dTheta * Time.deltaTime);
@@ -232,7 +292,7 @@ public class Waypoints : MonoBehaviour {
 						carMadeIt=true;
 					}
 					
-				}
+				//}
 				yield return null;
 			}
 			else {

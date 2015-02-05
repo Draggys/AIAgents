@@ -36,8 +36,8 @@ public class Grid : MonoBehaviour {
 				FillNeighbourhood4 (node);
 			if(neighbourhood == 8)
 				FillNeighbourhood8 (node);
-			if(neighbourhood == 12)
-				FillNeighbourhood12 (node);
+			if(neighbourhood == 16)
+				FillNeighbourhood16 (node);
 		}
 
 		Node n = grid [4, 3];
@@ -167,31 +167,56 @@ public class Grid : MonoBehaviour {
 		}
 	}
 
-	public void FillNeighbourhood12(Node node) {
+	public void FillNeighbourhood16(Node node) {
 		FillNeighbourhood8 (node);
 
 		int neighX = node.gridPosX - 2;
-		int neighY = node.gridPosY;
+		int neighY = node.gridPosY -1 ;
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
-			                                                                      new Vector3(-2, 0, 0)));
-		neighX = node.gridPosX;
-		neighY = node.gridPosY + 2;
+			                                                                      new Vector3(-2, 0, -1)));
+		neighX = node.gridPosX-2;
+		neighY = node.gridPosY +1;
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
-			                                                                      new Vector3(0, 0, 2)));
+			                                                                      new Vector3(1, 0, -2)));
 
-		neighX = node.gridPosX + 2;
-		neighY = node.gridPosY;
+		neighX = node.gridPosX -1;
+		neighY = node.gridPosY -2;
 		if (validIndex (neighX, neighY))
 			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
-			                                                                      new Vector3(2, 0, 0)));       
+			                                                                      new Vector3(-1, 0, -2)));       
 
-		neighX = node.gridPosX;
-		neighY = node.gridPosY - 2;
+		neighX = node.gridPosX -1;
+		neighY = node.gridPosY +2;
 		if (validIndex (neighX, neighY))
 			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
-			                                                                      new Vector3(0, 0, -2)));   
+			                                                                      new Vector3(-1, 0, 2)));
+
+		neighX = node.gridPosX +1;
+		neighY = node.gridPosY -2;
+		if (validIndex (neighX, neighY))
+			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
+			                                                                        new Vector3(1, 0, -2)));
+
+		neighX = node.gridPosX +1;
+		neighY = node.gridPosY +2;
+		if (validIndex (neighX, neighY))
+			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
+			                                                                        new Vector3(1, 0, 2)));
+
+		neighX = node.gridPosX +2;
+		neighY = node.gridPosY -1;
+		if (validIndex (neighX, neighY))
+			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
+			                                                                        new Vector3(2, 0, -1)));
+
+		neighX = node.gridPosX +2;
+		neighY = node.gridPosY +1;
+		if (validIndex (neighX, neighY))
+			grid [node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint (node.worldPosition + 
+			                                                                        new Vector3(2, 0, 1)));
+
 	}
 
 	public void FillNeighbourhood4(Node node) {
@@ -253,7 +278,7 @@ public class Grid : MonoBehaviour {
 			                                   Vector3.right));
 		
 		neighX = node.gridPosX - 1;
-		neighY = node.gridPosY - 1;
+		neighY = node.gridPosY + 1;
 		if(validIndex (neighX, neighY))
 			grid[node.gridPosX, node.gridPosY].neighbours.Add (NodeFromWorldPoint(node.worldPosition + 
 			                                   Vector3.left + Vector3.forward));

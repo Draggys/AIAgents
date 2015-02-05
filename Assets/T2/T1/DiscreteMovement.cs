@@ -39,6 +39,7 @@ public class DiscreteMovement : MonoBehaviour {
 		delaySec = 0.5f;
 
 		RequestPath ();
+		Debug.Log ("Path Length:" + path.Count);
 	}
 	
 	void FixedUpdate() {

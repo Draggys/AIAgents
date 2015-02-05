@@ -96,7 +96,7 @@ public class AStar : MonoBehaviour{
 		float straightCost = 10f;//10f;
 		float diagonalCost = 14f;
 		float skipCost = 5f;
-
+		/*
 		if (from.gridPosX == to.gridPosX && from.gridPosY + 2 == to.gridPosY) // up
 			return skipCost;
 		if (from.gridPosX + 2 == to.gridPosX && from.gridPosY == to.gridPosY) // right
@@ -104,7 +104,7 @@ public class AStar : MonoBehaviour{
 		if (from.gridPosX == to.gridPosX && from.gridPosY - 2 == to.gridPosY) // down
 			return skipCost;
 		if (from.gridPosX - 2 == to.gridPosX && from.gridPosY == to.gridPosY) // left
-			return skipCost;
+			return skipCost;*/
 
 		if (from.gridPosX == to.gridPosX && from.gridPosY + 1 == to.gridPosY) // up
 			return straightCost;
