@@ -52,6 +52,16 @@ public class Waypoints : MonoBehaviour {
 		path.Add (pos5);
 		path.Add (new Vector3 (-17, 1, -17));
 
+		for (int i=0; i<5; i++) {
+						path.Add (pos1);
+						path.Add (pos2);
+						path.Add (pos3);
+						path.Add (pos4);
+						path.Add (pos5);
+						path.Add (new Vector3 (-17, 1, -17));
+				}
+
+
 		velAtPoint=new List<Vector3>();
 
 
@@ -87,7 +97,8 @@ public class Waypoints : MonoBehaviour {
 				index++;
 				carMadeIt=false;
 				Debug.Log("Arrived at position");
-				Debug.Log ("DynVel:"+dynVel);
+				//Debug.Log ("DynVel:"+dynVel);
+				//Debug.Log("DynPVel:"+dynPVel);
 				if(index >= path.Count) {
 					isRunning=false;
 					yield break;
@@ -144,27 +155,19 @@ public class Waypoints : MonoBehaviour {
 
 				dir=Vector3.Normalize(current-transform.position);
 
+				Vector3 normVel=Vector3.Normalize(dynPVel);
+
+				//The change is the difference between the direction and the velocity vector
+				Vector3 change=Vector3.Normalize(dir-normVel);
+
 				//Debug.Log ("Dir:"+dir);
-
-				float distToSlow=(Mathf.Pow(dynVel,2)-4.0f)/(2*accMax);
-
-				if(distanceToTarget>distToSlow){
-					dynVel=dynVel+accMax;
-				}
-				else{
-					dynVel=dynVel-accMax;
-				}
-
-				dynPVel.x=dynPVel.x*dynVel+dynVel*dir.x;
-				dynPVel.z=dynPVel.z*dynVel+dynVel*dir.z;
-
-
-				dynPVel=Vector3.Normalize(dynPVel);
-
+				//Debug.Log("accMax:"+accMax);
 				//Debug.Log ("DynVel:"+dynPVel);
 
+				dynPVel.x=dynPVel.x+accMax*change.x*Time.deltaTime;
+				dynPVel.z=dynPVel.z+accMax*change.z*Time.deltaTime;
+			
 				transform.position=transform.position+dynPVel;
-
 
 				yield return null;
 			}

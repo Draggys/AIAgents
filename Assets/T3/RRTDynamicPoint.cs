@@ -1,64 +1,64 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class RRTKinematicPoint : MonoBehaviour{
-
-	List<RRTKinematicNode> points;
+public class RRTDynamicPoint : MonoBehaviour{
+	
+	List<RRTDynamicPNode> points;
 	public float xLow;
 	public float xHigh;
 	public float zLow;
 	public float zHigh;
-
+	
 	public float goalInterval;
 	public int nrIterations;
 	public float nearRadius;
-
+	
 	public float velocity;
-
+	
 	private PolyMapLoader map;
-
-
+	
+	
 	private List<Vector3> path = null;
-
+	
 	void Start(){
-
+		
 		map = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
-
-		points = new List<RRTKinematicNode> ();
-		points.Add (new RRTKinematicNode (map.polyData.start));
-
+		
+		points = new List<RRTDynamicPNode> ();
+		points.Add (new RRTDynamicPNode (map.polyData.start));
+		
 		Debug.Log ("Starting RRT");
-
+		
 		this.doRRT (nrIterations, map.polyData.end);
-
+		
 		if (path != null) {
 			StartCoroutine("Move");
-			}
-
 		}
+		
+	}
 	
-
+	
 	public void doRRT(int nrIterations, Vector3 endPoint){
-
+		
 		for (int i=0; i<nrIterations; i++) {
-
+			
 			Vector3 curRand=this.sampleFree();
-
-			RRTKinematicNode nearest=this.closestPoint(curRand);
-
+			
+			RRTDynamicPNode nearest=this.closestPoint(curRand);
+			
 			//If obstacle free path
 			if(this.steer(nearest.position,curRand)){
-
-				RRTKinematicNode newNode=new RRTKinematicNode(curRand);
-
-				List<RRTKinematicNode> nearNodes=this.getNearPoints(newNode);
-
-				RRTKinematicNode xmin=nearest;
+				
+				RRTDynamicPNode newNode=new RRTDynamicPNode(curRand);
+				
+				List<RRTDynamicPNode> nearNodes=this.getNearPoints(newNode);
+				
+				RRTDynamicPNode xmin=nearest;
 				float cmin=nearest.getCost()+Vector3.Distance(nearest.position,curRand);
-
+				
 				//Check is path with less cost exists to new node
-				foreach(RRTKinematicNode near in nearNodes){
+				foreach(RRTDynamicPNode near in nearNodes){
 					//If collision free && lesser cost
 					float thisCost=near.getCost()+Vector3.Distance(near.position,curRand);
 					if(this.steer(near.position,curRand) && thisCost<cmin){
@@ -69,40 +69,40 @@ public class RRTKinematicPoint : MonoBehaviour{
 				newNode.setParent(xmin);
 				newNode.setCost(cmin);
 				points.Add(newNode);
-
+				
 				//Check if any of near points can be rewired
-				foreach(RRTKinematicNode near in nearNodes){
-
+				foreach(RRTDynamicPNode near in nearNodes){
+					
 					float costThroughNew=newNode.getCost()+Vector3.Distance(newNode.position,near.position);
-
+					
 					if(this.steer(near.position,newNode.position) && costThroughNew<near.getCost()){
 						near.setParent(newNode);
 					}
-
+					
 				}
-
+				
 			}
-
+			
 		}
-
+		
 		path=this.findPath (map.polyData.end);
 		if (path == null) {
 			Debug.Log ("No path found");
-			} 
+		} 
 		else {
 			Debug.Log("Path found");
-			}
-
+		}
+		
 	}
-
+	
 	private Vector3 sampleFree(){
-
+		
 		Vector3 curRand=new Vector3(Random.Range(xLow,xHigh),1,Random.Range(zLow,zHigh));
 		bool valid = false;
-
+		
 		while (!valid) {
-
-			RRTKinematicNode nearest=this.closestPoint(curRand);
+			
+			RRTDynamicPNode nearest=this.closestPoint(curRand);
 			if(this.steer(nearest.position,curRand)){
 				valid=true;
 			}
@@ -110,25 +110,25 @@ public class RRTKinematicPoint : MonoBehaviour{
 				curRand.x=Random.Range(xLow,xHigh);
 				curRand.z=Random.Range(zLow,zHigh);
 			}
-
+			
 		}
-
+		
 		return curRand;
-
-		}
-
-
-
+		
+	}
+	
+	
+	
 	/*
 	 * Find the closest point among the old points 
 	 */
-	private RRTKinematicNode closestPoint(Vector3 newPoint){
-
+	private RRTDynamicPNode closestPoint(Vector3 newPoint){
+		
 		float curLowest = float.PositiveInfinity;
-		RRTKinematicNode curNearest = null;
-
+		RRTDynamicPNode curNearest = null;
+		
 		for (int i=0; i<points.Count; i++) {
-
+			
 			float dist=Vector3.Distance(points[i].position,newPoint);
 			if(dist<curLowest){
 				curLowest=dist;
@@ -137,52 +137,52 @@ public class RRTKinematicPoint : MonoBehaviour{
 		}
 		return curNearest;
 	}
-
+	
 	//To get the list of near points needed in RRT*
-	private List<RRTKinematicNode> getNearPoints(RRTKinematicNode newNode){
-
-		List<RRTKinematicNode> nearNodes = new List<RRTKinematicNode> ();
-
+	private List<RRTDynamicPNode> getNearPoints(RRTDynamicPNode newNode){
+		
+		List<RRTDynamicPNode> nearNodes = new List<RRTDynamicPNode> ();
+		
 		for (int i=0; i<points.Count; i++) {
-
+			
 			float dist=Vector3.Distance(points[i].position,newNode.position);
 			if(dist<nearRadius){
 				nearNodes.Add(points[i]);
 			}
-
+			
 		}
 		return nearNodes;
-
-		}
-
+		
+	}
+	
 	//Function to "steer" from start point to end point
 	private bool steer(Vector3 start,Vector3 end){
-
+		
 		//For the kinematic point there is a obstacle free path if there is a line
 		//between the points that doesn't cut any obstacle line
-
+		
 		Line newLine = new Line (start, end);
-
+		
 		foreach (Line line in map.polyData.lines) {
-
+			
 			if(newLine.intersect(line)){
 				return false;
 			}
-
-				}
-
-		return true;
+			
 		}
-
+		
+		return true;
+	}
+	
 	private List<Vector3> findPath(Vector3 endPoint){
-
-		RRTKinematicNode goalNode = null;
+		
+		RRTDynamicPNode goalNode = null;
 		List<Vector3> path=new List<Vector3>();
-
-		foreach (RRTKinematicNode node in points) {
-
+		
+		foreach (RRTDynamicPNode node in points) {
+			
 			float distToGoal=Vector3.Distance(node.position,endPoint);
-
+			
 			//If there is a point close to the goal
 			if(distToGoal<goalInterval){
 				goalNode=node;
@@ -194,31 +194,31 @@ public class RRTKinematicPoint : MonoBehaviour{
 		if(goalNode==null){
 			return null;
 		}
-
-		RRTKinematicNode curNode = goalNode;
-
+		
+		RRTDynamicPNode curNode = goalNode;
+		
 		while (curNode.parent!=null) {
-
+			
 			path.Add(curNode.position);
 			curNode=curNode.parent;
-
-			}
-
+			
+		}
+		
 		//Also add the startnode, which will be the node with parent==null
 		path.Add (curNode.position);
-
+		
 		//Reverse the path
 		path.Reverse();
-
+		
 		return path;
-
-		}
-
-
+		
+	}
+	
+	
 	public bool hasPath(){
 		return path!=null;
-		}
-
+	}
+	
 	IEnumerator Move() {
 		int index = 0;
 		
@@ -239,9 +239,9 @@ public class RRTKinematicPoint : MonoBehaviour{
 			yield return null;
 		}
 	}
-
-
-
+	
+	
+	
 	void OnDrawGizmos() {
 		
 		map = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
@@ -272,6 +272,7 @@ public class RRTKinematicPoint : MonoBehaviour{
 		Gizmos.DrawLine (new Vector3(0,1,90), new Vector3 (0, 1, 0));
 		
 	}
-
-
+	
+	
 }
+
