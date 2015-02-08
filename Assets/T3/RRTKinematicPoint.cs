@@ -77,6 +77,7 @@ public class RRTKinematicPoint : MonoBehaviour{
 
 					if(this.steer(near.position,newNode.position) && costThroughNew<near.getCost()){
 						near.setParent(newNode);
+						near.setCost(costThroughNew);
 					}
 
 				}

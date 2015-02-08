@@ -14,7 +14,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 	public int nrIterations;
 	public float nearRadius;
 	
-	public float velocity;
+	public float accMax;
 	
 	private PolyMapLoader map;
 	
@@ -48,37 +48,49 @@ public class RRTDynamicPoint : MonoBehaviour{
 			RRTDynamicPNode nearest=this.closestPoint(curRand);
 			
 			//If obstacle free path
-			if(this.steer(nearest.position,curRand)){
+			RRTDynPSteerRet steerRet=this.steer(nearest.position,curRand,nearest.getVelocity());
+
+			if(steerRet!=null){
 				
 				RRTDynamicPNode newNode=new RRTDynamicPNode(curRand);
 				
 				List<RRTDynamicPNode> nearNodes=this.getNearPoints(newNode);
 				
 				RRTDynamicPNode xmin=nearest;
-				float cmin=nearest.getCost()+Vector3.Distance(nearest.position,curRand);
+				float cmin=nearest.getCost()+steerRet.getSteps();
+				Vector3 newVel=steerRet.getVel();
 				
 				//Check is path with less cost exists to new node
 				foreach(RRTDynamicPNode near in nearNodes){
 					//If collision free && lesser cost
-					float thisCost=near.getCost()+Vector3.Distance(near.position,curRand);
-					if(this.steer(near.position,curRand) && thisCost<cmin){
+					RRTDynPSteerRet ret=this.steer(near.position,curRand,near.getVelocity());
+					if(ret!=null){
+					float thisCost=near.getCost()+ret.getSteps();
+					if(thisCost<cmin){
 						xmin=near;
 						cmin=thisCost;
+						newVel=ret.getVel();
 					}
+				}
 				}
 				newNode.setParent(xmin);
 				newNode.setCost(cmin);
+				newNode.setVelocity(newVel);
 				points.Add(newNode);
 				
 				//Check if any of near points can be rewired
 				foreach(RRTDynamicPNode near in nearNodes){
+
+					RRTDynPSteerRet ret=this.steer(near.position,newNode.position,newNode.getVelocity());
+
+					if(ret!=null){
+					float costThroughNew=newNode.getCost()+ret.getSteps();
 					
-					float costThroughNew=newNode.getCost()+Vector3.Distance(newNode.position,near.position);
-					
-					if(this.steer(near.position,newNode.position) && costThroughNew<near.getCost()){
-						near.setParent(newNode);
+						if(costThroughNew<near.getCost()){
+							near.setParent(newNode);
+							near.setCost(costThroughNew);
+						}
 					}
-					
 				}
 				
 			}
@@ -103,7 +115,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 		while (!valid) {
 			
 			RRTDynamicPNode nearest=this.closestPoint(curRand);
-			if(this.steer(nearest.position,curRand)){
+			if(this.checkIntersection(nearest.position,curRand)){
 				valid=true;
 			}
 			else{
@@ -156,11 +168,57 @@ public class RRTDynamicPoint : MonoBehaviour{
 	}
 	
 	//Function to "steer" from start point to end point
-	private bool steer(Vector3 start,Vector3 end){
+	private RRTDynPSteerRet steer(Vector3 start,Vector3 end, Vector3 startVel){
 		
-		//For the kinematic point there is a obstacle free path if there is a line
-		//between the points that doesn't cut any obstacle line
-		
+		Vector3 dynPVel = startVel;
+
+		Vector3 curPosition = start;
+
+		Vector3 goalPosition = end;
+
+		float startDistance = Vector3.Distance (start, end);
+
+		int nrSteps = 0;
+
+		while (true) {
+			float distance=Vector3.Distance(curPosition,goalPosition);
+			if(distance<=goalInterval && distance<(startDistance/2)) {
+				//If we have arrived at out end point
+				return new RRTDynPSteerRet(nrSteps,dynPVel);
+			}
+			
+			Vector3 dir;
+			
+			float distanceToTarget=Vector3.Distance (goalPosition, curPosition);
+			
+			dir=Vector3.Normalize(goalPosition-curPosition);
+			
+			Vector3 normVel=Vector3.Normalize(dynPVel);
+			
+			//The change is the difference between the direction and the velocity vector
+			Vector3 change=Vector3.Normalize(dir-normVel);
+			
+			//Debug.Log ("Dir:"+dir);
+			//Debug.Log("accMax:"+accMax);
+			//Debug.Log ("DynVel:"+dynPVel);
+			
+			dynPVel.x=dynPVel.x+accMax*change.x;
+			dynPVel.z=dynPVel.z+accMax*change.z;
+			
+			Vector3 newPosition=curPosition+dynPVel;
+
+			//Every time we have moved we check to see that we havent crossed any obstacle
+			if(!this.checkIntersection(curPosition,newPosition)){
+				return null;
+			}
+
+			curPosition=newPosition;
+			nrSteps++;
+		}
+	}
+
+	private bool checkIntersection(Vector3 start, Vector3 end){
+
 		Line newLine = new Line (start, end);
 		
 		foreach (Line line in map.polyData.lines) {
@@ -172,7 +230,8 @@ public class RRTDynamicPoint : MonoBehaviour{
 		}
 		
 		return true;
-	}
+
+		}
 	
 	private List<Vector3> findPath(Vector3 endPoint){
 		
@@ -221,11 +280,14 @@ public class RRTDynamicPoint : MonoBehaviour{
 	
 	IEnumerator Move() {
 		int index = 0;
-		
+
+		Vector3 dynPVel = new Vector3 (0, 0, 0);
+
 		Vector3 current = path[index];
 		while (true) {
 			float distance=Vector3.Distance(transform.position,current);
-			if(distance<=goalInterval*Time.deltaTime ) {
+			float curVel=Vector3.Magnitude(dynPVel);
+			if(distance<=goalInterval*curVel ) {
 				index++;
 				
 				//Debug.Log("Arrived at position");
@@ -235,7 +297,27 @@ public class RRTDynamicPoint : MonoBehaviour{
 				current = path[index];
 				//Debug.Log("Current:"+current);
 			}
-			transform.position = Vector3.MoveTowards (transform.position, current, velocity * Time.deltaTime);
+
+			Vector3 dir;
+			
+			float distanceToTarget=Vector3.Distance (current, transform.position);
+
+			dir=Vector3.Normalize(current-transform.position);
+			
+			Vector3 normVel=Vector3.Normalize(dynPVel);
+			
+			//The change is the difference between the direction and the velocity vector
+			Vector3 change=Vector3.Normalize(dir-normVel);
+			
+			//Debug.Log ("Dir:"+dir);
+			//Debug.Log("accMax:"+accMax);
+			//Debug.Log ("DynVel:"+dynPVel);
+			
+			dynPVel.x=dynPVel.x+accMax*change.x;//*Time.deltaTime;
+			dynPVel.z=dynPVel.z+accMax*change.z;//*Time.deltaTime;
+			
+			transform.position=transform.position+dynPVel;
+			
 			yield return null;
 		}
 	}
