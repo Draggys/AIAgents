@@ -81,7 +81,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 				//Check if any of near points can be rewired
 				foreach(RRTDynamicPNode near in nearNodes){
 
-					RRTDynPSteerRet ret=this.steer(near.position,newNode.position,newNode.getVelocity());
+					RRTDynPSteerRet ret=this.steer(newNode.position,near.position,newNode.getVelocity());
 
 					if(ret!=null){
 					float costThroughNew=newNode.getCost()+ret.getSteps();
@@ -89,6 +89,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 						if(costThroughNew<near.getCost()){
 							near.setParent(newNode);
 							near.setCost(costThroughNew);
+							near.velocity=ret.getVel();
 						}
 					}
 				}

@@ -38,6 +38,10 @@ public class AStar : MonoBehaviour{
 				if (!costSoFar.ContainsKey (node) || newCost < costSoFar[node]) {
 					if(node.walkable) {
 						costSoFar[node] = newCost;
+						node.cost=newCost;
+						if(node==targetNode){
+							Debug.Log("TargetNode:"+newCost);
+						}
 						float priority = newCost + Heuristic (targetNode.worldPosition, node.worldPosition);
 						frontier.Enqueue (node, priority);
 						cameFrom[node] = currentNode;
@@ -93,8 +97,8 @@ public class AStar : MonoBehaviour{
 	public float GetCost(Node from, Node to) {
 		// TODO: Perhaps check if neighbours else return infinity
 
-		float straightCost = 10f;//10f;
-		float diagonalCost = 14f;
+		float straightCost = 1f;//10f;
+		float diagonalCost = Mathf.Sqrt(2);
 		float skipCost = 5f;
 		/*
 		if (from.gridPosX == to.gridPosX && from.gridPosY + 2 == to.gridPosY) // up
