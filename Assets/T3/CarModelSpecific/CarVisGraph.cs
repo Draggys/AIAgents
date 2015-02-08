@@ -33,7 +33,8 @@ public class CarVisGraph : MonoBehaviour {
 		
 		// Choose model
 		transform.position = polyData.start;
-		model = gameObject.AddComponent<KinematicCarModel> ();
+	//	model = gameObject.AddComponent<KinematicCarModel> ();
+		model = gameObject.AddComponent<DynamicCarModel> ();
 		model.SetPath (path);
 		model.SetObstacles (obstacles);
 		model.StartCoroutineMove ();
