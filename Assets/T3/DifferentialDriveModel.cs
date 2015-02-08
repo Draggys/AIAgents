@@ -30,6 +30,11 @@ public class DifferentialDriveModel : MonoBehaviour, Model {
 				dir = current - GameObject.Find ("Player").transform.position;
 				//Debug.Log("Jump");
 				GameObject.Find ("Player").transform.position = current;
+				index++;
+				if(index < path.Count)
+					current = path[index].pos;
+				else
+					yield break;
 			}
 			else {
 				

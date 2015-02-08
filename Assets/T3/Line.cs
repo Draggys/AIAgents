@@ -6,9 +6,6 @@ public class Line {
 	public Vector3 point1;
 	public Vector3 point2;
 
-	public PolyNode node1;
-	public PolyNode node2;
-
 	public Line(Vector3 point1, Vector3 point2){
 		this.point1 = point1;
 		this.point2 = point2;
