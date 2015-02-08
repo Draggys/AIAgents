@@ -14,6 +14,8 @@ public class CarVisGraph : MonoBehaviour {
 	
 	public float kinematic_vel;
 	public List<PolyNode> path = null;
+
+	public int carType = 0;
 	
 	void Start() {
 		PolyMapLoader loader = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
@@ -33,8 +35,8 @@ public class CarVisGraph : MonoBehaviour {
 		
 		// Choose model
 		transform.position = polyData.start;
-	//	model = gameObject.AddComponent<KinematicCarModel> ();
-		model = gameObject.AddComponent<DynamicCarModel> ();
+		model = gameObject.AddComponent<KinematicCarModel> ();
+	//	model = gameObject.AddComponent<DynamicCarModel> ();
 		model.SetPath (path);
 		model.SetObstacles (obstacles);
 		model.StartCoroutineMove ();
