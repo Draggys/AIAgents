@@ -222,7 +222,7 @@ public class RRTKinematicPoint : MonoBehaviour{
 
 	IEnumerator Move() {
 		int index = 0;
-		
+		float timeBefore = Time.time;
 		Vector3 current = path[index];
 		while (true) {
 			float distance=Vector3.Distance(transform.position,current);
@@ -231,12 +231,14 @@ public class RRTKinematicPoint : MonoBehaviour{
 				
 				//Debug.Log("Arrived at position");
 				if(index >= path.Count) {
+					float timeAfter=Time.time;
+					Debug.Log("Time:"+(timeAfter-timeBefore));
 					yield break;
 				}
 				current = path[index];
 				//Debug.Log("Current:"+current);
 			}
-			transform.position = Vector3.MoveTowards (transform.position, current, velocity * Time.deltaTime);
+			transform.position = Vector3.MoveTowards (transform.position, current, velocity );
 			yield return null;
 		}
 	}

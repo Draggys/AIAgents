@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class RRTDynamicPoint : MonoBehaviour{
+public class RRTDiffDrive : MonoBehaviour{
 	
-	List<RRTDynamicPNode> points;
+	List<RRTDiffNode> points;
 	public float xLow;
 	public float xHigh;
 	public float zLow;
@@ -14,7 +14,9 @@ public class RRTDynamicPoint : MonoBehaviour{
 	public int nrIterations;
 	public float nearRadius;
 	
-	public float accMax;
+	public float vMax;
+	public float wMax;
+	private float wMaxDegrees;
 	
 	private PolyMapLoader map;
 	
@@ -25,10 +27,14 @@ public class RRTDynamicPoint : MonoBehaviour{
 		
 		map = new PolyMapLoader ("x", "y", "goalPos", "startPos", "button");
 		
-		points = new List<RRTDynamicPNode> ();
-		points.Add (new RRTDynamicPNode (map.polyData.start));
+		points = new List<RRTDiffNode> ();
+		RRTDiffNode startNode = new RRTDiffNode (map.polyData.start);
+		startNode.direction = transform.rotation;
+		points.Add (startNode);
 		
 		Debug.Log ("Starting RRT");
+
+		wMaxDegrees=wMax*(180/Mathf.PI);
 		
 		this.doRRT (nrIterations, map.polyData.end);
 		
@@ -42,54 +48,56 @@ public class RRTDynamicPoint : MonoBehaviour{
 	public void doRRT(int nrIterations, Vector3 endPoint){
 		
 		for (int i=0; i<nrIterations; i++) {
+
+			//Debug.Log ("Iteration: " +i);
 			
 			Vector3 curRand=this.sampleFree();
 			
-			RRTDynamicPNode nearest=this.closestPoint(curRand);
+			RRTDiffNode nearest=this.closestPoint(curRand);
 			
 			//If obstacle free path
-			RRTDynPSteerRet steerRet=this.steer(nearest.position,curRand,nearest.getVelocity());
-
+			RRTDiffSteerRet steerRet=this.steer(nearest.position,curRand,nearest.getDirection());
+			
 			if(steerRet!=null){
 				
-				RRTDynamicPNode newNode=new RRTDynamicPNode(curRand);
+				RRTDiffNode newNode=new RRTDiffNode(curRand);
 				
-				List<RRTDynamicPNode> nearNodes=this.getNearPoints(newNode);
+				List<RRTDiffNode> nearNodes=this.getNearPoints(newNode);
 				
-				RRTDynamicPNode xmin=nearest;
+				RRTDiffNode xmin=nearest;
 				float cmin=nearest.getCost()+steerRet.getSteps();
-				Vector3 newVel=steerRet.getVel();
+				Quaternion newRot=steerRet.getRot();
 				
 				//Check is path with less cost exists to new node
-				foreach(RRTDynamicPNode near in nearNodes){
+				foreach(RRTDiffNode near in nearNodes){
 					//If collision free && lesser cost
-					RRTDynPSteerRet ret=this.steer(near.position,curRand,near.getVelocity());
+					RRTDiffSteerRet ret=this.steer(near.position,curRand,near.getDirection());
 					if(ret!=null){
-					float thisCost=near.getCost()+ret.getSteps();
-					if(thisCost<cmin){
-						xmin=near;
-						cmin=thisCost;
-						newVel=ret.getVel();
+						float thisCost=near.getCost()+ret.getSteps();
+						if(thisCost<cmin){
+							xmin=near;
+							cmin=thisCost;
+							newRot=ret.getRot();
+						}
 					}
-				}
 				}
 				newNode.setParent(xmin);
 				newNode.setCost(cmin);
-				newNode.setVelocity(newVel);
+				newNode.setDirection(newRot);
 				points.Add(newNode);
 				
 				//Check if any of near points can be rewired
-				foreach(RRTDynamicPNode near in nearNodes){
-
-					RRTDynPSteerRet ret=this.steer(newNode.position,near.position,newNode.getVelocity());
-
-					if(ret!=null){
-					float costThroughNew=newNode.getCost()+ret.getSteps();
+				foreach(RRTDiffNode near in nearNodes){
 					
+					RRTDiffSteerRet ret=this.steer(newNode.position,near.position,newNode.getDirection());
+					
+					if(ret!=null){
+						float costThroughNew=newNode.getCost()+ret.getSteps();
+						
 						if(costThroughNew<near.getCost()){
 							near.setParent(newNode);
 							near.setCost(costThroughNew);
-							near.velocity=ret.getVel();
+							near.direction=ret.getRot();
 						}
 					}
 				}
@@ -115,7 +123,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 		
 		while (!valid) {
 			
-			RRTDynamicPNode nearest=this.closestPoint(curRand);
+			RRTDiffNode nearest=this.closestPoint(curRand);
 			if(this.checkIntersection(nearest.position,curRand)){
 				valid=true;
 			}
@@ -132,13 +140,13 @@ public class RRTDynamicPoint : MonoBehaviour{
 	
 	
 	
-	/*
-	 * Find the closest point among the old points 
-	 */
-	private RRTDynamicPNode closestPoint(Vector3 newPoint){
+
+	 // Find the closest point among the old points 
+
+	private RRTDiffNode closestPoint(Vector3 newPoint){
 		
 		float curLowest = float.PositiveInfinity;
-		RRTDynamicPNode curNearest = null;
+		RRTDiffNode curNearest = null;
 		
 		for (int i=0; i<points.Count; i++) {
 			
@@ -152,9 +160,9 @@ public class RRTDynamicPoint : MonoBehaviour{
 	}
 	
 	//To get the list of near points needed in RRT*
-	private List<RRTDynamicPNode> getNearPoints(RRTDynamicPNode newNode){
+	private List<RRTDiffNode> getNearPoints(RRTDiffNode newNode){
 		
-		List<RRTDynamicPNode> nearNodes = new List<RRTDynamicPNode> ();
+		List<RRTDiffNode> nearNodes = new List<RRTDiffNode> ();
 		
 		for (int i=0; i<points.Count; i++) {
 			
@@ -169,57 +177,87 @@ public class RRTDynamicPoint : MonoBehaviour{
 	}
 	
 	//Function to "steer" from start point to end point
-	private RRTDynPSteerRet steer(Vector3 start,Vector3 end, Vector3 startVel){
+	private RRTDiffSteerRet steer(Vector3 start,Vector3 end, Quaternion startRot){
+
+		Quaternion theta = Quaternion.LookRotation (end - start);
+
+		Line newLine = new Line (start, end);
 		
-		Vector3 dynPVel = startVel;
+		foreach (Line line in map.polyData.lines) {
+			
+			if(newLine.intersect(line)){
+				return null;
+			}
+			
+		}
 
-		Vector3 curPosition = start;
+		float dist = Vector3.Distance (start, end);
 
+		return new RRTDiffSteerRet(dist,theta);
+
+		/*Vector3 curPosition = start;
+		
 		Vector3 goalPosition = end;
-
+		
 		float startDistance = Vector3.Distance (start, end);
-
+		
 		int nrSteps = 0;
 
+		Quaternion curRot = startRot;
+		
 		while (true) {
 			float distance=Vector3.Distance(curPosition,goalPosition);
 			if(distance<=goalInterval && distance<(startDistance/2)) {
 				//If we have arrived at out end point
-				return new RRTDynPSteerRet(nrSteps,dynPVel);
+				return new RRTDiffSteerRet(nrSteps,curRot);
 			}
 			
 			Vector3 dir;
+			Quaternion theta = Quaternion.LookRotation (goalPosition - curPosition);
 			
-			float distanceToTarget=Vector3.Distance (goalPosition, curPosition);
+			//Vector3 curPos=transform.position;
+			//Vector3 rot=transform.eulerAngles;
+			float curTheta=curRot.eulerAngles.y*(Mathf.PI/180);
+			Vector3 dirPoint=curPosition;
+			dirPoint.x=curPosition.x+1*Mathf.Sin(curTheta);
+			dirPoint.z=curPosition.z+1*Mathf.Cos(curTheta);
+			Vector3 lookDir=Vector3.Normalize(dirPoint-curPosition);
 			
-			dir=Vector3.Normalize(goalPosition-curPosition);
+			dir = Vector3.Normalize (goalPosition - curPosition);	
 			
-			Vector3 normVel=Vector3.Normalize(dynPVel);
+			float diffAngle=Vector3.Angle(dir,lookDir);
 			
-			//The change is the difference between the direction and the velocity vector
-			Vector3 change=Vector3.Normalize(dir-normVel);
+			float stepsToRightAngle=diffAngle/(wMaxDegrees);
 			
-			//Debug.Log ("Dir:"+dir);
-			//Debug.Log("accMax:"+accMax);
-			//Debug.Log ("DynVel:"+dynPVel);
+			float stepsToDist=distance/(vMax);
 			
-			dynPVel.x=dynPVel.x+accMax*change.x;
-			dynPVel.z=dynPVel.z+accMax*change.z;
-			
-			Vector3 newPosition=curPosition+dynPVel;
+			if(stepsToRightAngle>stepsToDist){
+				curRot = Quaternion.RotateTowards (curRot, theta, wMaxDegrees);
+			}
+			else{
+				
+				curRot = Quaternion.RotateTowards (curRot, theta, wMaxDegrees);
 
+				float moveVel=Vector3.Dot(dir,lookDir)*vMax;
+				
+				lookDir.x = lookDir.x * (  moveVel );
+				lookDir.z = lookDir.z * ( moveVel );
+			}
+			
+			Vector3 newPosition=curPosition+lookDir;
+			
 			//Every time we have moved we check to see that we havent crossed any obstacle
 			if(!this.checkIntersection(curPosition,newPosition)){
 				return null;
 			}
-
+			
 			curPosition=newPosition;
 			nrSteps++;
-		}
+		}*/
 	}
-
+	
 	private bool checkIntersection(Vector3 start, Vector3 end){
-
+		
 		Line newLine = new Line (start, end);
 		
 		foreach (Line line in map.polyData.lines) {
@@ -231,15 +269,15 @@ public class RRTDynamicPoint : MonoBehaviour{
 		}
 		
 		return true;
-
-		}
+		
+	}
 	
 	private List<Vector3> findPath(Vector3 endPoint){
 		
-		RRTDynamicPNode goalNode = null;
+		RRTDiffNode goalNode = null;
 		List<Vector3> path=new List<Vector3>();
 		
-		foreach (RRTDynamicPNode node in points) {
+		foreach (RRTDiffNode node in points) {
 			
 			float distToGoal=Vector3.Distance(node.position,endPoint);
 			
@@ -255,7 +293,7 @@ public class RRTDynamicPoint : MonoBehaviour{
 			return null;
 		}
 		
-		RRTDynamicPNode curNode = goalNode;
+		RRTDiffNode curNode = goalNode;
 		
 		while (curNode.parent!=null) {
 			
@@ -281,47 +319,83 @@ public class RRTDynamicPoint : MonoBehaviour{
 	
 	IEnumerator Move() {
 		int index = 0;
-
-		Vector3 dynPVel = new Vector3 (0, 0, 0);
-
+		float timeBefore=Time.time;
+		int steps = 0;
 		Vector3 current = path[index];
-		float timeBefore = Time.time;
 		while (true) {
 			float distance=Vector3.Distance(transform.position,current);
-			float curVel=Vector3.Magnitude(dynPVel);
-			if(distance<=goalInterval*curVel ) {
+
+			if(distance<=goalInterval*vMax ) {
 				index++;
 				
 				//Debug.Log("Arrived at position");
 				if(index >= path.Count) {
 					float timeAfter=Time.time;
 					Debug.Log("Time:"+(timeAfter-timeBefore));
+					Debug.Log("TimeSteps:"+steps);
 					yield break;
 				}
 				current = path[index];
 				//Debug.Log("Current:"+current);
 			}
 
-			Vector3 dir;
+			/*Vector3 dir;
+			Quaternion theta = Quaternion.LookRotation (current - transform.position);
 			
-			float distanceToTarget=Vector3.Distance (current, transform.position);
+			Vector3 curPos=transform.position;
+			Vector3 rot=transform.eulerAngles;
+			float curTheta=rot.y*(Mathf.PI/180);
+			Vector3 dirPoint=transform.position;
+			dirPoint.x=curPos.x+1*Mathf.Sin(curTheta);
+			dirPoint.z=curPos.z+1*Mathf.Cos(curTheta);
+			Vector3 lookDir=Vector3.Normalize(dirPoint-curPos);
+			
+			dir = Vector3.Normalize (current - transform.position);	
+			
+			float diffAngle=Vector3.Angle(dir,lookDir);
+			
+			float stepsToRightAngle=diffAngle/(wMaxDegrees);
+			
+			float stepsToDist=distance/(vMax);
+			
+			if(stepsToRightAngle>stepsToDist){
+				transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, wMaxDegrees);
+			}
+			else{
+				
+				transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, wMaxDegrees);
 
-			dir=Vector3.Normalize(current-transform.position);
-			
-			Vector3 normVel=Vector3.Normalize(dynPVel);
-			
-			//The change is the difference between the direction and the velocity vector
-			Vector3 change=Vector3.Normalize(dir-normVel);
-			
-			//Debug.Log ("Dir:"+dir);
-			//Debug.Log("accMax:"+accMax);
-			//Debug.Log ("DynVel:"+dynPVel);
-			
-			dynPVel.x=dynPVel.x+accMax*change.x;//*Time.deltaTime;
-			dynPVel.z=dynPVel.z+accMax*change.z;//*Time.deltaTime;
-			
-			transform.position=transform.position+dynPVel;
-			
+				
+				float moveVel=Vector3.Dot(dir,lookDir)*vMax;
+
+				lookDir.x = lookDir.x * (  moveVel );
+				lookDir.z = lookDir.z * ( moveVel );
+				transform.position = (transform.position + lookDir);
+				
+			}
+			yield return null;*/
+
+
+
+
+			Vector3 dir;
+
+			Quaternion theta = Quaternion.LookRotation (current - transform.position);
+
+			//else {
+
+			if(transform.rotation!=theta){
+
+				transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, wMaxDegrees);
+			}
+			else{
+
+				dir = Vector3.Normalize (current - transform.position);					
+				dir.x = dir.x * (  vMax );
+				dir.z = dir.z * ( vMax );
+				transform.position = (transform.position + dir);
+			}
+			steps++;
 			yield return null;
 		}
 	}
