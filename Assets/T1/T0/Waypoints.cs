@@ -93,7 +93,7 @@ public class Waypoints : MonoBehaviour {
 		Vector3 current = path[index];
 		while (true) {
 			float distance=Vector3.Distance(transform.position,current);
-			if(distance<=goalInterval*Time.deltaTime || carMadeIt) {
+			if(distance<=goalInterval || carMadeIt) {
 				index++;
 				carMadeIt=false;
 				Debug.Log("Arrived at position");
@@ -183,15 +183,52 @@ public class Waypoints : MonoBehaviour {
 				}*/
 				//else {
 
-					if(transform.rotation!=theta){
-						transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, angleVel * Time.deltaTime);
-					}
-					else{
-						dir = Vector3.Normalize (current - transform.position);					
-						dir.x = dir.x * (  vel * Time.deltaTime);
-						dir.z = dir.z * ( vel * Time.deltaTime);
-						transform.position = (transform.position + dir);
-					}
+				//if(transform.rotation!=theta){
+					
+					transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, angleVel*Time.deltaTime);
+				//}
+				//else{
+
+					Vector3 curPos=transform.position;
+					Vector3 rot=transform.eulerAngles;
+				float curTheta=rot.y*(Mathf.PI/180);
+					Vector3 dirPoint=transform.position;
+					dirPoint.x=curPos.x+1*Mathf.Sin(curTheta);
+					dirPoint.z=curPos.z+1*Mathf.Cos(curTheta);
+					Vector3 lookDir=Vector3.Normalize(dirPoint-curPos);
+
+
+
+
+				Debug.Log("LookDir:"+lookDir);
+
+				
+
+					
+					dir = Vector3.Normalize (current - transform.position);	
+				Debug.Log("Dir:"+dir);
+					/*dir.x = dir.x * (  vel * Time.deltaTime);
+					dir.z = dir.z * ( vel * Time.deltaTime);
+					transform.position = (transform.position + dir);*/
+				//}
+
+				float diffAngle=Vector3.Angle(dir,lookDir);
+
+				float curVel=0;
+
+				if(diffAngle<75){
+					curVel=Vector3.Dot(dir,lookDir)*vel;
+				}
+
+				Debug.Log(curVel);
+
+					//dir = Vector3.Normalize (current - transform.position);					
+				lookDir.x = lookDir.x * (  curVel * Time.deltaTime);
+				lookDir.z = lookDir.z * ( curVel * Time.deltaTime);
+					transform.position = (transform.position + lookDir);
+
+
+					//}
 					/*
 					dir = Vector3.Normalize (current - transform.position);
 					Quaternion theta = Quaternion.LookRotation (current - transform.position);
