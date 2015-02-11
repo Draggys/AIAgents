@@ -317,8 +317,8 @@ public class RRTDynamicPoint : MonoBehaviour{
 			//Debug.Log("accMax:"+accMax);
 			//Debug.Log ("DynVel:"+dynPVel);
 			
-			dynPVel.x=dynPVel.x+accMax*change.x;//*Time.deltaTime;
-			dynPVel.z=dynPVel.z+accMax*change.z;//*Time.deltaTime;
+			dynPVel.x=dynPVel.x+accMax*change.x*Time.deltaTime;
+			dynPVel.z=dynPVel.z+accMax*change.z*Time.deltaTime;
 			
 			transform.position=transform.position+dynPVel;
 			

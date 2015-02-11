@@ -179,7 +179,7 @@ public class RRTDiffDrive : MonoBehaviour{
 	//Function to "steer" from start point to end point
 	private RRTDiffSteerRet steer(Vector3 start,Vector3 end, Quaternion startRot){
 
-		Quaternion theta = Quaternion.LookRotation (end - start);
+		/*Quaternion theta = Quaternion.LookRotation (end - start);
 
 		Line newLine = new Line (start, end);
 		
@@ -193,9 +193,9 @@ public class RRTDiffDrive : MonoBehaviour{
 
 		float dist = Vector3.Distance (start, end);
 
-		return new RRTDiffSteerRet(dist,theta);
+		return new RRTDiffSteerRet(dist,theta);*/
 
-		/*Vector3 curPosition = start;
+		Vector3 curPosition = start;
 		
 		Vector3 goalPosition = end;
 		
@@ -230,7 +230,9 @@ public class RRTDiffDrive : MonoBehaviour{
 			float stepsToRightAngle=diffAngle/(wMaxDegrees);
 			
 			float stepsToDist=distance/(vMax);
-			
+
+			Vector3 newPosition=curPosition;
+
 			if(stepsToRightAngle>stepsToDist){
 				curRot = Quaternion.RotateTowards (curRot, theta, wMaxDegrees);
 			}
@@ -238,13 +240,16 @@ public class RRTDiffDrive : MonoBehaviour{
 				
 				curRot = Quaternion.RotateTowards (curRot, theta, wMaxDegrees);
 
-				float moveVel=Vector3.Dot(dir,lookDir)*vMax;
-				
-				lookDir.x = lookDir.x * (  moveVel );
-				lookDir.z = lookDir.z * ( moveVel );
+				if(diffAngle<90){
+					//float moveVel=Vector3.Dot(dir,lookDir)*vMax;
+					//lookDir.x = lookDir.x * (  moveVel );
+					//lookDir.z = lookDir.z * ( moveVel );
+					lookDir.x = lookDir.x * (  vMax );
+					lookDir.z = lookDir.z * ( vMax );
+					newPosition=curPosition+lookDir;
+				}
 			}
-			
-			Vector3 newPosition=curPosition+lookDir;
+
 			
 			//Every time we have moved we check to see that we havent crossed any obstacle
 			if(!this.checkIntersection(curPosition,newPosition)){
@@ -253,7 +258,7 @@ public class RRTDiffDrive : MonoBehaviour{
 			
 			curPosition=newPosition;
 			nrSteps++;
-		}*/
+		}
 	}
 	
 	private bool checkIntersection(Vector3 start, Vector3 end){
@@ -339,7 +344,7 @@ public class RRTDiffDrive : MonoBehaviour{
 				//Debug.Log("Current:"+current);
 			}
 
-			/*Vector3 dir;
+			Vector3 dir;
 			Quaternion theta = Quaternion.LookRotation (current - transform.position);
 			
 			Vector3 curPos=transform.position;
@@ -366,18 +371,23 @@ public class RRTDiffDrive : MonoBehaviour{
 				transform.rotation = Quaternion.RotateTowards (transform.rotation, theta, wMaxDegrees);
 
 				
-				float moveVel=Vector3.Dot(dir,lookDir)*vMax;
+				if(diffAngle<90){
+					//float moveVel=Vector3.Dot(dir,lookDir)*vMax;					
+					//lookDir.x = lookDir.x * (  moveVel );
+					//lookDir.z = lookDir.z * ( moveVel );
 
-				lookDir.x = lookDir.x * (  moveVel );
-				lookDir.z = lookDir.z * ( moveVel );
-				transform.position = (transform.position + lookDir);
+					lookDir.x = lookDir.x * (  vMax );
+					lookDir.z = lookDir.z * ( vMax );
+					transform.position = (transform.position + lookDir);
+				}
+
 				
 			}
-			yield return null;*/
+			yield return null;
 
 
 
-
+			/*
 			Vector3 dir;
 
 			Quaternion theta = Quaternion.LookRotation (current - transform.position);
@@ -396,7 +406,7 @@ public class RRTDiffDrive : MonoBehaviour{
 				transform.position = (transform.position + dir);
 			}
 			steps++;
-			yield return null;
+			yield return null;*/
 		}
 	}
 	
