@@ -61,9 +61,29 @@ public class Dubin : MonoBehaviour {
 	}
 */
 
-	public Line CSCMinTrajectory(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
+	public Line MinTrajectory(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
+	                          float r1, float r2) {
+		Line SI = CSCMinTrajectoryInner(start, goal, startAngle, goalAngle, r1, r2);
+		Line SO = CCCMinTrajectoryOuter(start, goal, startAngle, goalAngle, r1, r2);
+		if (SI == null && SO != null)
+			return SO;
+		else if (SO == null && SI != null)
+			return SI;
+		else if (Vector3.Distance (SI.point2, SI.point1) < Vector3.Distance (SO.point2, SO.point1))
+			return SI;
+		else
+			return SO;
+	}
+
+	public Line CCCMinTrajectoryOuter(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
+	                             float r1, float r2) {
+		CSCTrajectories(start, goal, startAngle,goalAngle, r1, r2, "outer");
+		return GetShortestTangent ();
+	}
+
+	public Line CSCMinTrajectoryInner(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
 	                   float r1, float r2) {
-		CSCTrajectories(start, goal, startAngle,goalAngle, r1, r2);
+		CSCTrajectories(start, goal, startAngle,goalAngle, r1, r2, "inner");
 		return GetShortestTangent ();
 	}
 
@@ -82,13 +102,16 @@ public class Dubin : MonoBehaviour {
 	}
 
 	void CSCTrajectories(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
-	                    float r1, float r2) {
+	                    float r1, float r2, string type) {
 		tangents = new List<Line> ();
 		proxCircles = GetProximityCircles (start, goal, startAngle, goalAngle, r1, r2);
 		List<Line> possibleTangents;
 
 		// RSR
-		possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [2].pos, r1, r2, "inner");
+		if(type == "inner")
+			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [2].pos, r1, r2, "inner");
+		else
+			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [2].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
 			float angle = Vector3.Angle (Vector3.Normalize(transform.forward), Vector3.Normalize (tangent.point1 - start));
 			if(angle < 90){
@@ -97,7 +120,10 @@ public class Dubin : MonoBehaviour {
 		}
 
 		//RSL
-		possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [3].pos, r1, r2, "inner");
+		if(type == "inner")
+			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [3].pos, r1, r2, "inner");
+		else
+			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [3].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
 			float angle = Vector3.Angle (Vector3.Normalize(transform.forward), Vector3.Normalize (tangent.point1 - start));
 			if(angle < 90){
@@ -106,7 +132,10 @@ public class Dubin : MonoBehaviour {
 		}
 		
 		// LSR
-		possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [2].pos, r1, r2, "inner");
+		if(type == "inner")
+			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [2].pos, r1, r2, "inner");
+		else
+			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [2].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
 			float angle = Vector3.Angle (Vector3.Normalize(-transform.forward), Vector3.Normalize (tangent.point1 - start));
 			if(angle < 90){
@@ -115,7 +144,10 @@ public class Dubin : MonoBehaviour {
 		}
 
 		// LSL
-		possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [3].pos, r1, r2, "inner");
+		if(type == "inner")
+			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [3].pos, r1, r2, "inner");
+		else
+			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [3].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
 			float angle = Vector3.Angle (Vector3.Normalize(-transform.forward), Vector3.Normalize (tangent.point1 - start));
 			if(angle < 90){

@@ -33,8 +33,8 @@ public class DubinWaypoint : MonoBehaviour {
 		tmp.rotation = Quaternion.RotateTowards (tmp.rotation, theta, 9000);
 
 		// Two different goal angles
-		//Line S = dubin.CSCMinTrajectory (start, goal, transform.rotation, tmp.rotation, minRadius, minRadius);
-		Line S = dubin.CSCMinTrajectory (start, goal, transform.rotation, transform.rotation, minRadius, minRadius);
+		//Line S = dubin.MinTrajectory (start, goal, transform.rotation, tmp.rotation, minRadius, minRadius);
+		Line S = dubin.MinTrajectory (start, goal, transform.rotation, transform.rotation, minRadius, minRadius);
 		dS = S;
 
 		path.Add (prePath [0]);
