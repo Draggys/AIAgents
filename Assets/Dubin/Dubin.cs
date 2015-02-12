@@ -12,25 +12,32 @@ public class Circle {
 	}
 }
 
-public class Dubin : MonoBehaviour {
-	float vel = 1;
-	float L = 2;
-	float minRadius = 2;
-	
+public class DubinRet {
+	Line tangent;
+	float gamma;
 
-	Circle[] proxCircles = null;
-	List<Line> tangents = null;
+	public DubinRet(Line line, float gamma) {
+		this.tangent = line;
+		this.gamma = gamma;
+	}
+}
+
+public class Dubin : MonoBehaviour {
+	// Debug
+	public Circle[] proxCircles = null;
+	public List<Line> tangents = null;
 
 
 	// Debug
+	/*
 	Vector3 start;
 	Vector3 startDir;
 	Vector3 goal;
 	Vector3 goalDir;
 	List<KeyValuePair<Vector3, float>> circles = null; // Debugging
 	Line winningTangent = null; // debug
-
-
+*/
+	/*
 	void Start(){
 		start = transform.position;
 		startDir = transform.position + transform.forward * 2;
@@ -50,7 +57,14 @@ public class Dubin : MonoBehaviour {
 		List<Line> outerTangents = CalculateTangents (p1, p2, minRadius, minRadius, "outer");
 		tangents.AddRange (innerTangents);
 		tangents.AddRange (outerTangents);
-		*/
+
+	}
+*/
+
+	public Line CSCMinTrajectory(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
+	                   float r1, float r2) {
+		CSCTrajectories(start, goal, startAngle,goalAngle, r1, r2);
+		return GetShortestTangent ();
 	}
 
 	Line GetShortestTangent() {
@@ -63,6 +77,7 @@ public class Dubin : MonoBehaviour {
 				ret = tangent;
 			}
 		}	
+
 		return ret;
 	}
 
@@ -121,6 +136,9 @@ public class Dubin : MonoBehaviour {
 			new Circle(current.position - current.right * r1, "L"),
 			new Circle(goal.position + goal.right * r2, "R"), 
 			new Circle(goal.position - goal.right * r2, "L")};
+
+		Destroy (current.gameObject);
+		Destroy (goal.gameObject);
 		return ret;
 	}
 
@@ -220,7 +238,7 @@ public class Dubin : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-
+		/*
 		Gizmos.color = Color.black;
 		if (circles != null) {
 			foreach (KeyValuePair<Vector3, float> p in circles) {
@@ -249,6 +267,7 @@ public class Dubin : MonoBehaviour {
 		Gizmos.color = Color.green;
 		if(winningTangent != null)
 			Gizmos.DrawLine (winningTangent.point1, winningTangent.point2);
+			*/
 	}
 
 }
