@@ -12,17 +12,13 @@ public class DubinWaypoint : MonoBehaviour {
 	public bool carMadeIt = false;
 	public float vel = 1;
 	float minRadius = 0f;
-	float gamma = 0f;
 
 	List<Vector3> path = null;
 	
 
 	void Start () {
 		minRadius = Mathf.Abs (carLength / (Mathf.Tan (maxWheelAngle) ));
-		print (carLength + " / " + "Tan(" + maxWheelAngle + ")");
 		dubin = gameObject.AddComponent<Dubin> ();
-
-		print (minRadius);
 
 		List<Vector3> prePath = new List<Vector3> ();
 		prePath.Add (Vector3.zero);
@@ -40,9 +36,6 @@ public class DubinWaypoint : MonoBehaviour {
 		//Line S = dubin.CSCMinTrajectory (start, goal, transform.rotation, tmp.rotation, minRadius, minRadius);
 		Line S = dubin.CSCMinTrajectory (start, goal, transform.rotation, transform.rotation, minRadius, minRadius);
 		dS = S;
-
-		gamma = Vector3.Angle (S.point1 - start, goal - start);
-		print ("gamma: " + gamma);
 
 		path.Add (prePath [0]);
 		path.Add (S.point1);
