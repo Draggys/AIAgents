@@ -12,16 +12,6 @@ public class Circle {
 	}
 }
 
-public class DubinRet {
-	Line tangent;
-	float gamma;
-
-	public DubinRet(Line line, float gamma) {
-		this.tangent = line;
-		this.gamma = gamma;
-	}
-}
-
 public class Dubin : MonoBehaviour {
 	// Debug
 	public Circle[] proxCircles = null;
