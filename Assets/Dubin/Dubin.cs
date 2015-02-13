@@ -17,44 +17,13 @@ public class Dubin : MonoBehaviour {
 	public Circle[] proxCircles = null;
 	public List<Line> tangents = null;
 
-
-	// Debug
-	/*
-	Vector3 start;
-	Vector3 startDir;
-	Vector3 goal;
-	Vector3 goalDir;
-	List<KeyValuePair<Vector3, float>> circles = null; // Debugging
-	Line winningTangent = null; // debug
-*/
-	/*
-	void Start(){
-		start = transform.position;
-		startDir = transform.position + transform.forward * 2;
-		goal = new Vector3 (10, 1, 10);
-		Transform tmp = new GameObject ().transform;
-		tmp.position = goal;
-		Quaternion theta = Quaternion.LookRotation (start - goal);
-		tmp.rotation = Quaternion.RotateTowards (tmp.rotation, theta, 9000);
-		//tmp.rotation = transform.rotation;
-		goalDir = tmp.position + tmp.forward * 2;
-
-		CSCTrajectories (start, goal, transform.rotation, tmp.rotation, minRadius, minRadius);
-		winningTangent = GetShortestTangent ();
-		/*
-		tangents = new List<Line> ();
-		List<Line> innerTangents = CalculateTangents (p1, p2, minRadius, minRadius, "inner");
-		List<Line> outerTangents = CalculateTangents (p1, p2, minRadius, minRadius, "outer");
-		tangents.AddRange (innerTangents);
-		tangents.AddRange (outerTangents);
-
-	}
-*/
-
 	public Line MinTrajectory(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
 	                          float r1, float r2) {
-		Line SI = CSCMinTrajectoryInner(start, goal, startAngle, goalAngle, r1, r2);
+		tangents = new List<Line> ();
+        Line SI = CSCMinTrajectoryInner(start, goal, startAngle, goalAngle, r1, r2);
 		Line SO = CCCMinTrajectoryOuter(start, goal, startAngle, goalAngle, r1, r2);
+		return SI;
+
 		if (SI == null && SO != null)
 			return SO;
 		else if (SO == null && SI != null)
@@ -82,6 +51,7 @@ public class Dubin : MonoBehaviour {
 		float shortest = -1;
 		foreach (Line tangent in tangents) {
 			float dist = Vector3.Distance (tangent.point1, tangent.point2);
+		//	print (tangent.point1 + " " + tangent.point2);
 			if(shortest == -1 || dist < shortest) {
 				shortest = dist;
 				ret = tangent;
@@ -93,7 +63,6 @@ public class Dubin : MonoBehaviour {
 
 	void CSCTrajectories(Vector3 start, Vector3 goal, Quaternion startAngle, Quaternion goalAngle,
 	                    float r1, float r2, string type) {
-		tangents = new List<Line> ();
 		proxCircles = GetProximityCircles (start, goal, startAngle, goalAngle, r1, r2);
 		List<Line> possibleTangents;
 
@@ -103,7 +72,7 @@ public class Dubin : MonoBehaviour {
 		else
 			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [2].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
-			float angle = Vector3.Angle (Vector3.Normalize(transform.forward), Vector3.Normalize (tangent.point1 - start));
+			float angle = Vector3.Angle (transform.position, tangent.point1);
 			if(angle < 90){
 				tangents.Add (tangent);
 			}
@@ -115,7 +84,7 @@ public class Dubin : MonoBehaviour {
 		else
 			possibleTangents = CalculateTangents (proxCircles [0].pos, proxCircles [3].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
-			float angle = Vector3.Angle (Vector3.Normalize(transform.forward), Vector3.Normalize (tangent.point1 - start));
+			float angle = Vector3.Angle (transform.position, tangent.point1);
 			if(angle < 90){
 				tangents.Add (tangent);
 			}
@@ -127,7 +96,7 @@ public class Dubin : MonoBehaviour {
 		else
 			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [2].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
-			float angle = Vector3.Angle (Vector3.Normalize(-transform.forward), Vector3.Normalize (tangent.point1 - start));
+			float angle = Vector3.Angle (transform.position, tangent.point1);
 			if(angle < 90){
 				tangents.Add (tangent);
 			}
@@ -139,11 +108,12 @@ public class Dubin : MonoBehaviour {
 		else
 			possibleTangents = CalculateTangents (proxCircles [1].pos, proxCircles [3].pos, r1, r2, "outer");
 		foreach (Line tangent in possibleTangents) {
-			float angle = Vector3.Angle (Vector3.Normalize(-transform.forward), Vector3.Normalize (tangent.point1 - start));
+			float angle = Vector3.Angle (transform.position, tangent.point1);
 			if(angle < 90){
 				tangents.Add (tangent);
 			}
 		}
+
 	}
 
 	Circle[] GetProximityCircles(Vector3 startPos, Vector3 goalPos, Quaternion startAngle, Quaternion goalAngle, 
@@ -184,7 +154,7 @@ public class Dubin : MonoBehaviour {
 
 		List<Vector3> pts = IntersectionPoints (p1, p3, r4, r3);
 		if (pts == null) {
-			print ("No intersection was found");
+		//	print ("No intersection was found");
 			return new List<Line> ();
 		}
 
@@ -260,20 +230,21 @@ public class Dubin : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		/*
+		
+
+        /*
 		Gizmos.color = Color.black;
 		if (circles != null) {
 			foreach (KeyValuePair<Vector3, float> p in circles) {
 				Gizmos.DrawWireSphere(p.Key, p.Value);
 			}
 		}
-
 		Gizmos.color = Color.blue;
 		if (tangents != null) {
 			foreach(Line line in tangents) {
 				Gizmos.DrawLine (line.point1, line.point2);
-			}
-		}
+            }
+        }
 
 		Gizmos.color = Color.white;
 		if (proxCircles != null) {

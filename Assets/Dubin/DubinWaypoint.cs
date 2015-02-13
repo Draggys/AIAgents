@@ -34,12 +34,9 @@ public class DubinWaypoint : MonoBehaviour {
 
 		// Two different goal angles
 		//Line S = dubin.MinTrajectory (start, goal, transform.rotation, tmp.rotation, minRadius, minRadius);
-		Line S = dubin.MinTrajectory (start, goal, transform.rotation, transform.rotation, minRadius, minRadius);
-		dS = S;
-
 		path.Add (prePath [0]);
-		path.Add (S.point1);
-		path.Add (S.point2);
+		//path.Add (S.point1);
+		//path.Add (S.point2);
 		path.Add (prePath [1]);
 
 		StartCoroutine ("Move");
@@ -52,13 +49,40 @@ public class DubinWaypoint : MonoBehaviour {
 	Vector3 current = Vector3.zero;
 	IEnumerator Move() {
 		current = path [index];
-		while (true) {
+
+		
+		Line S = dubin.MinTrajectory (transform.position, current, transform.rotation, 
+		                              transform.rotation, minRadius, minRadius);
+		dS = S;
+
+        bool followS = true;
+		int q = 2;
+        while (true) {
 			if(carMadeIt) {
-				index++;
-				if(index >= path.Count)
+				if(Vector3.Distance (transform.position, path[index]) < 1){
+					index++;
+					followS = true;
+                }
+                
+                if(index >= path.Count)
 					yield break;
-				current = path[index];
-				carMadeIt = false;
+			}
+
+			if(followS) {
+
+				if(q == 2){
+					current = S.point1;
+					if(Vector3.Distance (transform.position, current) < 1)
+						q--;
+				}
+				if(q == 1)
+					current = S.point2;
+					if(Vector3.Distance (transform.position, current) < 1)
+						q--;
+				if(q == 0) {
+					followS = false;
+					current = path[index];
+				}
 			}
 
 			float wheelAngleRad=maxWheelAngle*(Mathf.PI/180);
@@ -85,9 +109,18 @@ public class DubinWaypoint : MonoBehaviour {
 
 	void OnDrawGizmos() {
 		if (dubin != null) {
-			Gizmos.color = Color.black;
-			if (dubin.proxCircles != null) {
-				foreach (Circle circle in dubin.proxCircles) {
+
+			
+			Gizmos.color = Color.blue;
+			if (dubin.tangents != null) {
+				foreach(Line line in dubin.tangents) {
+					Gizmos.DrawLine (line.point1, line.point2);
+				}
+			}
+			
+            Gizmos.color = Color.black;
+            if (dubin.proxCircles != null) {
+                foreach (Circle circle in dubin.proxCircles) {
 					Gizmos.DrawWireSphere (circle.pos, minRadius);
 				}
 			}
@@ -108,6 +141,13 @@ public class DubinWaypoint : MonoBehaviour {
 			for(int i = index; i < path.Count; i++) {
 				Gizmos.DrawCube (path[i], Vector3.one * 0.2f);
 			}
-		}
-	}	
+
+			Gizmos.color = Color.magenta;
+			if(current != Vector3.zero){
+				Gizmos.DrawCube (current, Vector3.one * 0.5f);
+			}
+
+
+        }
+    }	
 }
